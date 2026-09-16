@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SchedMaster - Faculty Schedule Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+         :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #eff6ff;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --border-hover: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --text-light: #94a3b8;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --danger-light: #fef2f2;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius: 10px;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        /* --- AUTHENTICATION SCREEN --- */
+        
+        .auth-overlay {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1.5rem;
+            background: radial-gradient(circle at top right, #3b82f6 0%, #1e40af 100%);
+        }
+        
+        .auth-card {
+            background: var(--card-bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .auth-card h2 {
+            color: var(--text-main);
+            text-align: center;
+            font-size: 1.75rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+        
+        .auth-card p.subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            margin-bottom: 1.75rem;
+        }
+        
+        .auth-tabs {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .auth-tab {
+            flex: 1;
+            padding: 0.5rem;
+            text-align: center;
+            background: none;
+            border: none;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .auth-tab.active {
+            background: #ffffff;
+            color: var(--text-main);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .auth-form {
+            display: none;
+        }
+        
+        .auth-form.active {
+            display: block;
+        }
+        /* --- NAVIGATION --- */
+        
+        nav {
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border);
+            padding: 0.85rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--text-main);
+            letter-spacing: -0.02em;
+        }
+        
+        .brand-logo .logo-icon {
+            background: var(--primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        
+        .nav-link:hover {
+            color: var(--text-main);
+            background: #f1f5f9;
+        }
+        
+        .nav-link.active {
+            color: var(--primary);
+            background: var(--primary-light);
+            font-weight: 600;
+        }
+        
+        .btn-disconnect {
+            background-color: transparent;
+            color: var(--danger);
+            border: 1px solid #fecaca;
+            padding: 0.45rem 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            margin-left: 1rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-disconnect:hover {
+            background-color: var(--danger-light);
+            border-color: var(--danger);
+        }
+        /* --- CONTAINER & VIEWS --- */
+        
+        .container {
+            padding: 2rem;
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+        
+        .view-section {
+            display: none;
+            animation: fadeIn 0.25s ease-in-out;
+        }
+        
+        .view-section.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(4px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* --- DEPARTMENT CARDS --- */
+        
+        .dept-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .dept-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .dept-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .dept-card h3 {
+            color: var(--primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+        
+        .dept-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+        /* --- WORKSPACE & TIMETABLE --- */
+        
+        .header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            background: var(--card-bg);
+            padding: 1.25rem 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .header-bar h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+        
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .timetable-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 1.5rem;
+            align-items: start;
+        }
+        /* Table Design */
+        
+        .table-container {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        
+        .grid-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        
+        .grid-table th {
+            background: #f8fafc;
+            padding: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+        }
+        
+        .grid-table th:last-child {
+            border-right: none;
+        }
+        
+        .grid-table td {
+            border-bottom: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+            padding: 0.6rem;
+            height: 70px;
+            vertical-align: top;
+            width: 17%;
+        }
+        
+        .grid-table td:first-child {
+            width: 15%;
+            background: #fafafa;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+        
+        .grid-table td:last-child {
+            border-right: none;
+        }
+        
+        .grid-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .break-row td {
+            background: #f8fafc !important;
+            vertical-align: middle !important;
+            text-align: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-light);
+            letter-spacing: 0.02em;
+            height: 45px !important;
+        }
+        /* Schedule Slot Cards */
+        
+        .slot-item {
+            background: var(--primary-light);
+            border: 1px solid #bfdbfe;
+            border-left: 3px solid var(--primary);
+            padding: 0.5rem 0.65rem;
+            border-radius: 6px;
+            position: relative;
+            transition: all 0.15s;
+        }
+        
+        .slot-item:hover {
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .slot-item strong {
+            display: block;
+            color: var(--primary-hover);
+            font-size: 0.8rem;
+            font-weight: 600;
+            line-height: 1.25;
+            margin-bottom: 2px;
+            padding-right: 14px;
+        }
+        
+        .slot-item span {
+            display: block;
+            color: var(--text-muted);
+            font-size: 0.725rem;
+        }
+        
+        .slot-item .btn-del {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            color: var(--text-light);
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1rem;
+            line-height: 1;
+            padding: 2px;
+            border-radius: 4px;
+            transition: color 0.15s;
+        }
+        
+        .slot-item .btn-del:hover {
+            color: var(--danger);
+        }
+        /* --- SIDEBAR FORMS --- */
+        
+        .sidebar-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .sidebar-card h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            font-size: 0.775rem;
+            font-weight: 600;
+            margin-bottom: 0.35rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: var(--text-main);
+            background-color: #ffffff;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        
+        .form-group select:focus,
+        .form-group input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .btn-primary {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.65rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: background 0.15s;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+        
+        .btn-secondary {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            transition: all 0.15s;
+        }
+        
+        .btn-secondary:hover {
+            background: #f8fafc;
+            border-color: var(--border-hover);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- View 0: Authentication Screen -->
+    <div id="view-auth" class="auth-overlay">
+        <div class="auth-card">
+            <h2>SchedMaster</h2>
+            <p class="subtitle">Faculty Schedule Management Portal</p>
+
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+
+            <form id="form-login" class="auth-form active" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="login-user" required placeholder="Enter your username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-pass" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">Log In</button>
+            </form>
+
+            <form id="form-signup" class="auth-form" onsubmit="handleSignup(event)">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signup-name" required placeholder="Prof. Jane Doe">
+                </div>
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="signup-user" required placeholder="Choose a username">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signup-pass" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">Create Account</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application Portal -->
+    <div id="main-portal" style="display: none;">
+        <nav>
+            <div class="brand-logo">
+                <div class="logo-icon">S</div>
+                <span>SchedMaster</span>
+            </div>
+            <div class="nav-links">
+                <a class="nav-link" onclick="showView('departments')" id="nav-departments">Departments</a>
+                <a class="nav-link active" onclick="showView('timetable')" id="nav-timetable">Timetable</a>
+                <button class="btn-disconnect" onclick="disconnectPortal()">Disconnect</button>
+            </div>
+        </nav>
+
+        <div class="container">
+
+            <!-- View 1: Department Selection -->
+            <div id="view-departments" class="view-section">
+                <h2 style="font-size: 1.5rem; font-weight: 700;">Select Faculty Department</h2>
+                <p style="color: var(--text-muted); margin-top: 0.2rem;">Choose a department workspace to configure schedules</p>
+
+                <div class="dept-card-grid">
+                    <div class="dept-card" onclick="selectDept('JHS')">
+                        <h3>JHS</h3>
+                        <p>Junior High School Workspace</p>
+                    </div>
+                    <div class="dept-card" onclick="selectDept('SHS')">
+                        <h3>SHS</h3>
+                        <p>Senior High School Workspace</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View 2: Timetable Grid & Scheduler -->
+            <div id="view-timetable" class="view-section active">
+                <div class="header-bar">
+                    <div>
+                        <h2 id="dept-workspace-title">JHS Department Workspace</h2>
+                        <span style="font-size: 0.85rem; color: var(--text-muted);">Active Faculty: <strong id="active-user-display" style="color: var(--text-main);">User</strong></span>
+                    </div>
+                    <div class="header-controls">
+                        <button class="btn-secondary" onclick="toggleDepartment()">Switch Department</button>
+                    </div>
+                </div>
+
+                <div class="timetable-layout">
+                    <div class="table-container">
+                        <table class="grid-table">
+                            <thead>
+                                <tr>
+                                    <th>TIME SLOT</th>
+                                    <th>MONDAY</th>
+                                    <th>TUESDAY</th>
+                                    <th>WEDNESDAY</th>
+                                    <th>THURSDAY</th>
+                                    <th>FRIDAY</th>
+                                </tr>
+                            </thead>
+                            <tbody id="timetable-body">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div>
+                        <div class="sidebar-card">
+                            <h3>Clash-Free Scheduler</h3>
+                            <p style="font-size:0.775rem; color:var(--text-muted); margin-bottom:1.25rem;">Automatic conflict resolution enabled.</p>
+
+                            <div class="form-group">
+                                <label for="view-section-filter">Target Section</label>
+                                <select id="view-section-filter" onchange="onSectionFilterChange()"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Subject</label>
+                                <select id="form-subject"></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Day of Week</label>
+                                <select id="form-day">
+                                    <option value="MONDAY">Monday</option>
+                                    <option value="TUESDAY">Tuesday</option>
+                                    <option value="WEDNESDAY">Wednesday</option>
+                                    <option value="THURSDAY">Thursday</option>
+                                    <option value="FRIDAY">Friday</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Time Slot</label>
+                                <select id="form-time">
+                                    <option value="7:30 AM - 8:30 AM">7:30 AM - 8:30 AM</option>
+                                    <option value="8:30 AM - 9:30 AM">8:30 AM - 9:30 AM</option>
+                                    <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
+                                    <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
+                                    <option value="1:00 PM - 2:00 PM">1:00 PM - 2:00 PM</option>
+                                    <option value="2:00 PM - 3:00 PM">2:00 PM - 3:00 PM</option>
+                                </select>
+                            </div>
+                            <button class="btn-primary" onclick="addAssignment()">Save Assignment</button>
+                        </div>
+
+                        <div class="sidebar-card">
+                            <h3>Workspace Options</h3>
+                            <p style="font-size:0.775rem; color:var(--text-muted); margin-bottom:1rem;">Manage section data</p>
+                            <button class="btn-primary" style="background:var(--danger);" onclick="clearTeacherSchedule()">Clear Current Section Schedule</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const DATA = {
+            JHS: {
+                sections: [
+                    "Grade 7 - CYBERNAUTS", "Grade 7 - OCAMPO", "Grade 7 - FLORES",
+                    "Grade 8 - PYTHON", "Grade 8 - HOPE", "Grade 8 - LOVE",
+                    "Grade 9 - AZURE", "Grade 9 - NARRA", "Grade 9 - YAKAL",
+                    "Grade 10 - AI", "Grade 10 - LUNA", "Grade 10 - RIZAL"
+                ],
+                subjects: ["Science", "Mathematics", "English", "Filipino", "Apan", "MAPEH", "TLE", "ESP"]
+            },
+            SHS: {
+                sections: [
+                    "Grade 11 - CORINTHIANS", "Grade 11 - PHILIPPIANS", "Grade 11 - EPHESIANS", "Grade 11 - THESSALONIANS",
+                    "Grade 12 - MAKADIYOS", "Grade 12 - MAKATAO", "Grade 12 - MAKAKALIKASAN", "Grade 12 - MAKABANGA"
+                ],
+                subjects: ["Research / Practical Research", "General Mathematics", "Oral Communication", "Empowerment Technologies", "UCSP"]
+            }
+        };
+
+        const TIME_SLOTS = [
+            "7:30 AM - 8:30 AM",
+            "8:30 AM - 9:30 AM",
+            "9:30 AM - 10:00 AM (Morning Recess)",
+            "10:00 AM - 11:00 AM",
+            "11:00 AM - 12:00 PM",
+            "12:00 PM - 1:00 PM (Lunch Break)",
+            "1:00 PM - 2:00 PM",
+            "2:00 PM - 3:00 PM"
+        ];
+
+        const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
+
+        let currentDept = "JHS";
+        let activeSection = "";
+        let schedules = [];
+        let users = {
+            "admin": "admin123"
+        };
+        let activeUser = null;
+
+        function switchAuthTab(tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            if (tab === 'login') {
+                document.querySelectorAll('.auth-tab')[0].classList.add('active');
+                document.getElementById('form-login').classList.add('active');
+            } else {
+                document.querySelectorAll('.auth-tab')[1].classList.add('active');
+                document.getElementById('form-signup').classList.add('active');
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const user = document.getElementById('login-user').value.trim();
+            const pass = document.getElementById('login-pass').value;
+
+            if (users[user] && users[user] === pass) {
+                activeUser = user;
+                enterPortal();
+            } else {
+                alert('Invalid credentials. (Demo login: admin / admin123)');
+            }
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value.trim();
+            const user = document.getElementById('signup-user').value.trim();
+            const pass = document.getElementById('signup-pass').value;
+
+            if (users[user]) {
+                alert('Username already exists. Please select another.');
+                return;
+            }
+
+            users[user] = pass;
+            activeUser = name || user;
+            alert('Account created successfully!');
+            enterPortal();
+        }
+
+        function enterPortal() {
+            document.getElementById('view-auth').style.display = 'none';
+            document.getElementById('main-portal').style.display = 'block';
+            document.getElementById('active-user-display').innerText = activeUser;
+            init();
+        }
+
+        function init() {
+            populateDropdowns();
+            renderTimetable();
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+
+            const targetView = document.getElementById(`view-${viewId}`);
+            const targetNav = document.getElementById(`nav-${viewId}`);
+
+            if (targetView) targetView.classList.add('active');
+            if (targetNav) targetNav.classList.add('active');
+        }
+
+        function selectDept(deptKey) {
+            currentDept = deptKey;
+            const titleEl = document.getElementById('dept-workspace-title');
+            if (titleEl) {
+                titleEl.innerText = `${deptKey} Department Workspace`;
+            }
+            populateDropdowns();
+            renderTimetable();
+            showView('timetable');
+        }
+
+        function toggleDepartment() {
+            const nextDept = currentDept === 'JHS' ? 'SHS' : 'JHS';
+            selectDept(nextDept);
+        }
+
+        function populateDropdowns() {
+            const viewFilterSelect = document.getElementById('view-section-filter');
+            const subjectSelect = document.getElementById('form-subject');
+
+            if (DATA[currentDept]) {
+                const sectionOptions = DATA[currentDept].sections.map(s => `<option value="${s}">${s}</option>`).join('');
+
+                if (viewFilterSelect) viewFilterSelect.innerHTML = sectionOptions;
+                if (subjectSelect) subjectSelect.innerHTML = DATA[currentDept].subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+
+                // Set initial active section to the first section of the department
+                activeSection = DATA[currentDept].sections[0];
+                if (viewFilterSelect) viewFilterSelect.value = activeSection;
+            }
+        }
+
+        function onSectionFilterChange() {
+            const viewFilterSelect = document.getElementById('view-section-filter');
+            if (viewFilterSelect) {
+                activeSection = viewFilterSelect.value;
+                renderTimetable();
+            }
+        }
+
+        function renderTimetable() {
+            const tbody = document.getElementById('timetable-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            TIME_SLOTS.forEach(slot => {
+                const isBreak = slot.includes("Recess") || slot.includes("Break");
+                let tr = document.createElement('tr');
+
+                if (isBreak) {
+                    tr.classList.add('break-row');
+                    tr.innerHTML = `<td>${slot}</td><td colspan="5">${slot.split(' ')[2].replace('(', '')} Break</td>`;
+                } else {
+                    let timeTd = `<td>${slot}</td>`;
+                    let daysHtml = DAYS.map(day => {
+                        // Filter schedule specifically for the currently active department and section
+                        const entry = schedules.find(s => s.dept === currentDept && s.section === activeSection && s.day === day && s.time === slot);
+                        if (entry) {
+                            return `<td>
+                                <div class="slot-item">
+                                    <button class="btn-del" onclick="deleteAssignment(${entry.id})">&times;</button>
+                                    <strong>${entry.subject}</strong>
+                                    <span>${entry.section}</span>
+                                </div>
+                            </td>`;
+                        }
+                        return `<td></td>`;
+                    }).join('');
+                    tr.innerHTML = timeTd + daysHtml;
+                }
+                tbody.appendChild(tr);
+            });
+        }
+
+        function addAssignment() {
+            const sectionEl = document.getElementById('view-section-filter');
+            const subjectEl = document.getElementById('form-subject');
+            const dayEl = document.getElementById('form-day');
+            const timeEl = document.getElementById('form-time');
+
+            if (!sectionEl || !subjectEl || !dayEl || !timeEl) return;
+
+            const section = sectionEl.value;
+            const subject = subjectEl.value;
+            const day = dayEl.value;
+            const time = timeEl.value;
+
+            // Check if slot is already occupied for THIS specific section
+            const timeClash = schedules.find(s => s.dept === currentDept && s.section === section && s.day === day && s.time === time);
+            if (timeClash) {
+                alert(`Conflict Warning: ${timeClash.subject} is already scheduled for ${section} at this slot.`);
+                return;
+            }
+
+            schedules.push({
+                id: Date.now(),
+                dept: currentDept,
+                section,
+                subject,
+                day,
+                time
+            });
+
+            renderTimetable();
+        }
+
+        function deleteAssignment(id) {
+            schedules = schedules.filter(s => s.id !== id);
+            renderTimetable();
+        }
+
+        function clearTeacherSchedule() {
+            if (confirm(`Are you sure you want to reset the timetable for ${activeSection}?`)) {
+                schedules = schedules.filter(s => !(s.dept === currentDept && s.section === activeSection));
+                renderTimetable();
+            }
+        }
+
+        function disconnectPortal() {
+            activeUser = null;
+            document.getElementById('main-portal').style.display = 'none';
+            document.getElementById('view-auth').style.display = 'flex';
+        }
+    </script>
+</body>
+
+</html>

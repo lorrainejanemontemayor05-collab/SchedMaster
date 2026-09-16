@@ -690,11 +690,32 @@
 
         let currentDept = "JHS";
         let activeSection = "";
-        let schedules = [];
-        let users = {
+        let activeUser = null;
+
+        // Load registered users from localStorage or default to admin
+        let users = JSON.parse(localStorage.getItem('schedmaster_users')) || {
             "admin": "admin123"
         };
-        let activeUser = null;
+
+        // Load shared global schedules from localStorage
+        let schedules = JSON.parse(localStorage.getItem('schedmaster_schedules')) || [];
+
+        // Helper functions to keep local storage updated
+        function saveSchedules() {
+            localStorage.setItem('schedmaster_schedules', JSON.stringify(schedules));
+        }
+
+        function saveUsers() {
+            localStorage.setItem('schedmaster_users', JSON.stringify(users));
+        }
+
+        // Real-time synchronization across different tabs/windows
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'schedmaster_schedules') {
+                schedules = JSON.parse(e.newValue) || [];
+                renderTimetable();
+            }
+        });
 
         function switchAuthTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
@@ -733,6 +754,7 @@
             }
 
             users[user] = pass;
+            saveUsers(); // Persist user registration
             activeUser = name || user;
             alert('Account created successfully!');
             enterPortal();
@@ -787,7 +809,6 @@
                 if (viewFilterSelect) viewFilterSelect.innerHTML = sectionOptions;
                 if (subjectSelect) subjectSelect.innerHTML = DATA[currentDept].subjects.map(s => `<option value="${s}">${s}</option>`).join('');
 
-                // Set initial active section to the first section of the department
                 activeSection = DATA[currentDept].sections[0];
                 if (viewFilterSelect) viewFilterSelect.value = activeSection;
             }
@@ -816,16 +837,16 @@
                 } else {
                     let timeTd = `<td>${slot}</td>`;
                     let daysHtml = DAYS.map(day => {
-                        // Filter schedule specifically for the currently active department and section
                         const entry = schedules.find(s => s.dept === currentDept && s.section === activeSection && s.day === day && s.time === slot);
                         if (entry) {
                             return `<td>
-                                <div class="slot-item">
-                                    <button class="btn-del" onclick="deleteAssignment(${entry.id})">&times;</button>
-                                    <strong>${entry.subject}</strong>
-                                    <span>${entry.section}</span>
-                                </div>
-                            </td>`;
+                            <div class="slot-item">
+                                <button class="btn-del" onclick="deleteAssignment(${entry.id})">&times;</button>
+                                <strong>${entry.subject}</strong>
+                                <span>${entry.section}</span>
+                                <span style="font-size:0.68rem; color:var(--primary); margin-top:2px; font-weight:600;">Faculty: ${entry.teacher || 'Unassigned'}</span>
+                            </div>
+                        </td>`;
                         }
                         return `<td></td>`;
                     }).join('');
@@ -848,10 +869,10 @@
             const day = dayEl.value;
             const time = timeEl.value;
 
-            // Check if slot is already occupied for THIS specific section
+            // Check if section is already occupied at this time slot
             const timeClash = schedules.find(s => s.dept === currentDept && s.section === section && s.day === day && s.time === time);
             if (timeClash) {
-                alert(`Conflict Warning: ${timeClash.subject} is already scheduled for ${section} at this slot.`);
+                alert(`Conflict Warning: ${timeClash.subject} (assigned to ${timeClash.teacher || 'another teacher'}) is already scheduled for ${section} at this slot.`);
                 return;
             }
 
@@ -861,20 +882,24 @@
                 section,
                 subject,
                 day,
-                time
+                time,
+                teacher: activeUser // Store which faculty member created the entry
             });
 
+            saveSchedules(); // Persist changes globally
             renderTimetable();
         }
 
         function deleteAssignment(id) {
             schedules = schedules.filter(s => s.id !== id);
+            saveSchedules(); // Persist changes globally
             renderTimetable();
         }
 
         function clearTeacherSchedule() {
             if (confirm(`Are you sure you want to reset the timetable for ${activeSection}?`)) {
                 schedules = schedules.filter(s => !(s.dept === currentDept && s.section === activeSection));
+                saveSchedules(); // Persist changes globally
                 renderTimetable();
             }
         }

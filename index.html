@@ -42,7 +42,6 @@
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
         }
-        /* --- AUTHENTICATION SCREEN --- */
         
         .auth-overlay {
             display: flex;
@@ -113,7 +112,6 @@
         .auth-form.active {
             display: block;
         }
-        /* --- NAVIGATION --- */
         
         nav {
             background-color: #ffffff;
@@ -194,7 +192,6 @@
             background-color: var(--danger-light);
             border-color: var(--danger);
         }
-        /* --- CONTAINER & VIEWS --- */
         
         .container {
             padding: 2rem;
@@ -221,7 +218,6 @@
                 transform: translateY(0);
             }
         }
-        /* --- DEPARTMENT CARDS --- */
         
         .dept-card-grid {
             display: grid;
@@ -258,7 +254,6 @@
             color: var(--text-muted);
             font-size: 0.9rem;
         }
-        /* --- WORKSPACE & TIMETABLE --- */
         
         .header-bar {
             display: flex;
@@ -292,7 +287,6 @@
             gap: 1.5rem;
             align-items: start;
         }
-        /* Table Design */
         
         .table-container {
             background: var(--card-bg);
@@ -361,7 +355,6 @@
             letter-spacing: 0.02em;
             height: 45px !important;
         }
-        /* Schedule Slot Cards */
         
         .slot-item {
             background: var(--primary-light);
@@ -393,6 +386,13 @@
             font-size: 0.725rem;
         }
         
+        .slot-item .teacher-tag {
+            font-size: 0.65rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+        
         .slot-item .btn-del {
             position: absolute;
             top: 4px;
@@ -411,7 +411,6 @@
         .slot-item .btn-del:hover {
             color: var(--danger);
         }
-        /* --- SIDEBAR FORMS --- */
         
         .sidebar-card {
             background: var(--card-bg);
@@ -502,7 +501,6 @@
 
 <body>
 
-    <!-- View 0: Authentication Screen -->
     <div id="view-auth" class="auth-overlay">
         <div class="auth-card">
             <h2>SchedMaster</h2>
@@ -543,7 +541,6 @@
         </div>
     </div>
 
-    <!-- Main Application Portal -->
     <div id="main-portal" style="display: none;">
         <nav>
             <div class="brand-logo">
@@ -559,7 +556,6 @@
 
         <div class="container">
 
-            <!-- View 1: Department Selection -->
             <div id="view-departments" class="view-section">
                 <h2 style="font-size: 1.5rem; font-weight: 700;">Select Faculty Department</h2>
                 <p style="color: var(--text-muted); margin-top: 0.2rem;">Choose a department workspace to configure schedules</p>
@@ -576,7 +572,6 @@
                 </div>
             </div>
 
-            <!-- View 2: Timetable Grid & Scheduler -->
             <div id="view-timetable" class="view-section active">
                 <div class="header-bar">
                     <div>
@@ -656,6 +651,7 @@
     </div>
 
     <script>
+        // Updated Subject List (Apan -> AP) and Section Names (MAKABANGA -> Makabansa)
         const DATA = {
             JHS: {
                 sections: [
@@ -664,12 +660,12 @@
                     "Grade 9 - AZURE", "Grade 9 - NARRA", "Grade 9 - YAKAL",
                     "Grade 10 - AI", "Grade 10 - LUNA", "Grade 10 - RIZAL"
                 ],
-                subjects: ["Science", "Mathematics", "English", "Filipino", "Apan", "MAPEH", "TLE", "ESP"]
+                subjects: ["Science", "Mathematics", "English", "Filipino", "AP", "MAPEH", "TLE", "ESP"]
             },
             SHS: {
                 sections: [
                     "Grade 11 - CORINTHIANS", "Grade 11 - PHILIPPIANS", "Grade 11 - EPHESIANS", "Grade 11 - THESSALONIANS",
-                    "Grade 12 - MAKADIYOS", "Grade 12 - MAKATAO", "Grade 12 - MAKAKALIKASAN", "Grade 12 - MAKABANGA"
+                    "Grade 12 - MAKADIYOS", "Grade 12 - MAKATAO", "Grade 12 - MAKAKALIKASAN", "Grade 12 - Makabansa"
                 ],
                 subjects: ["Research / Practical Research", "General Mathematics", "Oral Communication", "Empowerment Technologies", "UCSP"]
             }
@@ -692,30 +688,18 @@
         let activeSection = "";
         let activeUser = null;
 
-        // Load registered users from localStorage or default to admin
+        // Load Persistent Data from Local Storage
+        let schedules = JSON.parse(localStorage.getItem('schedmaster_schedules')) || [];
         let users = JSON.parse(localStorage.getItem('schedmaster_users')) || {
             "admin": "admin123"
         };
+        let activeTeachers = JSON.parse(localStorage.getItem('schedmaster_teachers')) || [];
 
-        // Load shared global schedules from localStorage
-        let schedules = JSON.parse(localStorage.getItem('schedmaster_schedules')) || [];
-
-        // Helper functions to keep local storage updated
-        function saveSchedules() {
+        function saveToStorage() {
             localStorage.setItem('schedmaster_schedules', JSON.stringify(schedules));
-        }
-
-        function saveUsers() {
             localStorage.setItem('schedmaster_users', JSON.stringify(users));
+            localStorage.setItem('schedmaster_teachers', JSON.stringify(activeTeachers));
         }
-
-        // Real-time synchronization across different tabs/windows
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'schedmaster_schedules') {
-                schedules = JSON.parse(e.newValue) || [];
-                renderTimetable();
-            }
-        });
 
         function switchAuthTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
@@ -754,8 +738,8 @@
             }
 
             users[user] = pass;
-            saveUsers(); // Persist user registration
             activeUser = name || user;
+            saveToStorage();
             alert('Account created successfully!');
             enterPortal();
         }
@@ -763,7 +747,13 @@
         function enterPortal() {
             document.getElementById('view-auth').style.display = 'none';
             document.getElementById('main-portal').style.display = 'block';
-            document.getElementById('active-user-display').innerText = activeUser;
+
+            if (!activeTeachers.includes(activeUser)) {
+                activeTeachers.push(activeUser);
+                saveToStorage();
+            }
+
+            document.getElementById('active-user-display').innerText = activeTeachers.join(', ');
             init();
         }
 
@@ -840,13 +830,13 @@
                         const entry = schedules.find(s => s.dept === currentDept && s.section === activeSection && s.day === day && s.time === slot);
                         if (entry) {
                             return `<td>
-                            <div class="slot-item">
-                                <button class="btn-del" onclick="deleteAssignment(${entry.id})">&times;</button>
-                                <strong>${entry.subject}</strong>
-                                <span>${entry.section}</span>
-                                <span style="font-size:0.68rem; color:var(--primary); margin-top:2px; font-weight:600;">Faculty: ${entry.teacher || 'Unassigned'}</span>
-                            </div>
-                        </td>`;
+                                <div class="slot-item">
+                                    <button class="btn-del" onclick="deleteAssignment(${entry.id})">&times;</button>
+                                    <strong>${entry.subject}</strong>
+                                    <span>${entry.section}</span>
+                                    <div class="teacher-tag">By: ${entry.teacher || 'Unknown'}</div>
+                                </div>
+                            </td>`;
                         }
                         return `<td></td>`;
                     }).join('');
@@ -869,10 +859,9 @@
             const day = dayEl.value;
             const time = timeEl.value;
 
-            // Check if section is already occupied at this time slot
             const timeClash = schedules.find(s => s.dept === currentDept && s.section === section && s.day === day && s.time === time);
             if (timeClash) {
-                alert(`Conflict Warning: ${timeClash.subject} (assigned to ${timeClash.teacher || 'another teacher'}) is already scheduled for ${section} at this slot.`);
+                alert(`Conflict Warning: ${timeClash.subject} is already scheduled for ${section} at this slot by ${timeClash.teacher || 'another teacher'}.`);
                 return;
             }
 
@@ -883,29 +872,32 @@
                 subject,
                 day,
                 time,
-                teacher: activeUser // Store which faculty member created the entry
+                teacher: activeUser
             });
 
-            saveSchedules(); // Persist changes globally
+            saveToStorage();
             renderTimetable();
         }
 
         function deleteAssignment(id) {
             schedules = schedules.filter(s => s.id !== id);
-            saveSchedules(); // Persist changes globally
+            saveToStorage();
             renderTimetable();
         }
 
         function clearTeacherSchedule() {
             if (confirm(`Are you sure you want to reset the timetable for ${activeSection}?`)) {
                 schedules = schedules.filter(s => !(s.dept === currentDept && s.section === activeSection));
-                saveSchedules(); // Persist changes globally
+                saveToStorage();
                 renderTimetable();
             }
         }
 
         function disconnectPortal() {
+            activeTeachers = activeTeachers.filter(t => t !== activeUser);
+            saveToStorage();
             activeUser = null;
+
             document.getElementById('main-portal').style.display = 'none';
             document.getElementById('view-auth').style.display = 'flex';
         }

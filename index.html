@@ -4,604 +4,730 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SchedMaster - Faculty Schedule Portal</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>SchedMaster - Faculty Schedule</title>
+
+    <!-- Firebase SDKs for Live Realtime Syncing -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
     <style>
          :root {
-            --primary: #2563eb;
-            --primary-hover: #1d4ed8;
-            --primary-light: #eff6ff;
-            --bg: #f8fafc;
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --bg-color: #f1f5f9;
             --card-bg: #ffffff;
-            --border: #e2e8f0;
-            --border-hover: #cbd5e1;
-            --text-main: #0f172a;
+            --text-main: #334155;
             --text-muted: #64748b;
-            --text-light: #94a3b8;
+            --border-color: #cbd5e1;
             --danger: #ef4444;
-            --danger-hover: #dc2626;
-            --danger-light: #fef2f2;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --radius: 10px;
+            --success: #22c55e;
         }
         
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
         
         body {
-            background-color: var(--bg);
+            background-color: var(--bg-color);
             color: var(--text-main);
             min-height: 100vh;
-            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
         }
-        /* --- AUTHENTICATION SCREEN --- */
+        /* --- AUTH SCREEN --- */
         
-        .auth-overlay {
+        .auth-container {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            padding: 1.5rem;
-            background: radial-gradient(circle at top right, #3b82f6 0%, #1e40af 100%);
+            padding: 20px;
         }
         
         .auth-card {
             background: var(--card-bg);
-            padding: 2.5rem;
-            border-radius: 16px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
-        }
-        
-        .auth-card h2 {
-            color: var(--text-main);
-            text-align: center;
-            font-size: 1.75rem;
-            font-weight: 700;
-            letter-spacing: -0.025em;
-        }
-        
-        .auth-card p.subtitle {
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 0.875rem;
-            margin-top: 0.25rem;
-            margin-bottom: 1.75rem;
+            border: 1px solid var(--border-color);
         }
         
         .auth-tabs {
             display: flex;
-            background: #f1f5f9;
-            padding: 4px;
-            border-radius: 8px;
             margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--border-color);
         }
         
         .auth-tab {
             flex: 1;
-            padding: 0.5rem;
+            padding: 10px;
             text-align: center;
             background: none;
             border: none;
             font-weight: 600;
-            font-size: 0.875rem;
-            color: var(--text-muted);
             cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.2s;
+            color: var(--text-muted);
         }
         
         .auth-tab.active {
-            background: #ffffff;
-            color: var(--text-main);
-            box-shadow: var(--shadow-sm);
+            color: var(--primary);
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: -2px;
         }
         
         .auth-form {
             display: none;
+            flex-direction: column;
+            gap: 1rem;
         }
         
         .auth-form.active {
-            display: block;
+            display: flex;
         }
-        /* --- NAVIGATION --- */
         
-        nav {
-            background-color: #ffffff;
-            border-bottom: 1px solid var(--border);
-            padding: 0.85rem 2rem;
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+            font-size: 0.9rem;
+            background-color: #fff;
+        }
+        
+        .btn {
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 0.9rem;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-danger {
+            background: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #16a34a;
+        }
+        /* --- HEADER & TOP NAV --- */
+        
+        #main-portal {
+            display: none;
+            flex: 1;
+            padding-bottom: 70px;
+        }
+        
+        header {
+            background: var(--card-bg);
+            padding: 0.75rem 2rem;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
         
         .brand-logo {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
+            gap: 8px;
             font-weight: 700;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--text-main);
-            letter-spacing: -0.02em;
         }
         
-        .brand-logo .logo-icon {
+        .brand-icon {
             background: var(--primary);
             color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.9rem;
+            font-weight: bold;
         }
+        /* --- CONTENT VIEWS --- */
         
-        .nav-links {
-            display: flex;
-            gap: 0.5rem;
-            align-items: center;
-        }
-        
-        .nav-link {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        
-        .nav-link:hover {
-            color: var(--text-main);
-            background: #f1f5f9;
-        }
-        
-        .nav-link.active {
-            color: var(--primary);
-            background: var(--primary-light);
-            font-weight: 600;
-        }
-        
-        .btn-disconnect {
-            background-color: transparent;
-            color: var(--danger);
-            border: 1px solid #fecaca;
-            padding: 0.45rem 0.9rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.85rem;
-            margin-left: 1rem;
-            transition: all 0.2s;
-        }
-        
-        .btn-disconnect:hover {
-            background-color: var(--danger-light);
-            border-color: var(--danger);
-        }
-        /* --- CONTAINER & VIEWS --- */
-        
-        .container {
-            padding: 2rem;
-            max-width: 1440px;
+        .view-content {
+            display: none;
+            padding: 1.5rem 2rem;
+            max-width: 1300px;
             margin: 0 auto;
         }
         
-        .view-section {
-            display: none;
-            animation: fadeIn 0.25s ease-in-out;
-        }
-        
-        .view-section.active {
+        .view-content.active {
             display: block;
         }
         
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(4px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        /* --- DEPARTMENT CARDS --- */
-        
-        .dept-card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1.5rem;
-        }
-        
-        .dept-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 2.5rem 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .dept-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--primary);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .dept-card h3 {
-            color: var(--primary);
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 0.4rem;
-        }
-        
-        .dept-card p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-        /* --- WORKSPACE & TIMETABLE --- */
-        
-        .header-bar {
+        .workspace-banner {
+            background: #e2e8f0;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 1.5rem;
-            background: var(--card-bg);
-            padding: 1.25rem 1.5rem;
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
-            flex-wrap: wrap;
-            gap: 1rem;
         }
         
-        .header-bar h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
-            letter-spacing: -0.01em;
+        .workspace-banner h2 {
+            font-size: 1.1rem;
+            color: #1e293b;
         }
         
-        .header-controls {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+        .workspace-banner p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+        /* --- LAYOUTS --- */
+        
+        .grid-layout {
+            display: block;
+            width: 100%;
         }
         
-        .timetable-layout {
+        .monthly-layout {
             display: grid;
-            grid-template-columns: 1fr 340px;
+            grid-template-columns: 1fr 350px;
             gap: 1.5rem;
-            align-items: start;
         }
-        /* Table Design */
         
-        .table-container {
+        @media (max-width: 900px) {
+            .monthly-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* --- TIMETABLE TABLE --- */
+        
+        .table-wrapper {
             background: var(--card-bg);
-            border-radius: var(--radius);
-            border: 1px solid var(--border);
-            box-shadow: var(--shadow-sm);
-            overflow: hidden;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
         }
         
-        .grid-table {
+        table {
             width: 100%;
             border-collapse: collapse;
-            text-align: left;
+            text-align: center;
+            font-size: 0.85rem;
         }
         
-        .grid-table th {
-            background: #f8fafc;
-            padding: 1rem;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            border-bottom: 1px solid var(--border);
-            border-right: 1px solid var(--border);
-        }
-        
-        .grid-table th:last-child {
-            border-right: none;
-        }
-        
-        .grid-table td {
-            border-bottom: 1px solid var(--border);
-            border-right: 1px solid var(--border);
-            padding: 0.6rem;
-            height: 70px;
+        th,
+        td {
+            padding: 12px 8px;
+            border: 1px solid var(--border-color);
+            min-width: 100px;
             vertical-align: top;
-            width: 17%;
         }
         
-        .grid-table td:first-child {
-            width: 15%;
-            background: #fafafa;
-            vertical-align: middle;
-            text-align: center;
-            font-size: 0.8rem;
-            font-weight: 600;
+        th {
+            background: #f8fafc;
             color: var(--text-muted);
-        }
-        
-        .grid-table td:last-child {
-            border-right: none;
-        }
-        
-        .grid-table tr:last-child td {
-            border-bottom: none;
-        }
-        
-        .break-row td {
-            background: #f8fafc !important;
-            vertical-align: middle !important;
-            text-align: center;
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-light);
-            letter-spacing: 0.02em;
-            height: 45px !important;
-        }
-        /* Schedule Slot Cards */
-        
-        .slot-item {
-            background: var(--primary-light);
-            border: 1px solid #bfdbfe;
-            border-left: 3px solid var(--primary);
-            padding: 0.5rem 0.65rem;
-            border-radius: 6px;
-            position: relative;
-            transition: all 0.15s;
-        }
-        
-        .slot-item:hover {
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .slot-item strong {
-            display: block;
-            color: var(--primary-hover);
-            font-size: 0.8rem;
-            font-weight: 600;
-            line-height: 1.25;
-            margin-bottom: 2px;
-            padding-right: 14px;
-        }
-        
-        .slot-item span {
-            display: block;
-            color: var(--text-muted);
-            font-size: 0.725rem;
-        }
-        
-        .slot-item .teacher-tag {
-            font-size: 0.68rem;
-            color: var(--primary);
-            font-weight: 600;
-            margin-top: 3px;
-        }
-        
-        .slot-item .btn-del {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            color: var(--text-light);
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-size: 1rem;
-            line-height: 1;
-            padding: 2px;
-            border-radius: 4px;
-            transition: color 0.15s;
-        }
-        
-        .slot-item .btn-del:hover {
-            color: var(--danger);
-        }
-        /* --- SIDEBAR FORMS --- */
-        
-        .sidebar-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.25rem;
-            margin-bottom: 1.25rem;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .sidebar-card h3 {
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 0.25rem;
-            color: var(--text-main);
-            letter-spacing: -0.01em;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-group label {
-            display: block;
-            font-size: 0.775rem;
-            font-weight: 600;
-            margin-bottom: 0.35rem;
-            color: var(--text-muted);
+            font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.03em;
+            font-weight: 700;
         }
         
-        .form-group select,
-        .form-group input {
-            width: 100%;
-            padding: 0.6rem 0.75rem;
-            border: 1px solid var(--border);
+        .time-col {
+            font-weight: 700;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            width: 130px;
+            background: #f8fafc;
+        }
+        
+        .break-row {
+            background: #f8fafc;
+            color: #94a3b8;
+            font-size: 0.8rem;
+        }
+        
+        .slot-card {
+            background: #e0f2fe;
+            border: 1px solid #bae6fd;
             border-radius: 6px;
-            font-size: 0.875rem;
-            color: var(--text-main);
-            background-color: #ffffff;
-            outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            padding: 6px;
+            position: relative;
+            text-align: left;
+            margin-bottom: 4px;
         }
         
-        .form-group select:focus,
-        .form-group input:focus {
+        .slot-card strong {
+            display: block;
+            color: #0369a1;
+            font-size: 0.85rem;
+        }
+        
+        .slot-card span {
+            display: block;
+            color: #0284c7;
+            font-size: 0.75rem;
+        }
+        
+        .btn-del {
+            position: absolute;
+            top: 2px;
+            right: 4px;
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        /* --- CONTROL CARDS --- */
+        
+        .control-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            height: fit-content;
+        }
+        
+        .control-card h3 {
+            font-size: 1rem;
+            color: #0f172a;
+        }
+        
+        .control-card p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: -8px;
+        }
+        
+        .selection-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .select-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .select-card:hover {
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            color: var(--primary);
         }
+        /* --- FLOATING EDIT BUTTON & LEFT DRAWER --- */
         
-        .btn-primary {
-            width: 100%;
+        .fab-edit-btn {
+            position: fixed;
+            bottom: 75px;
+            left: 20px;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
             background: var(--primary);
             color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            cursor: pointer;
+            z-index: 1050;
+            transition: transform 0.2s, background 0.2s;
             border: none;
-            padding: 0.65rem 1rem;
-            border-radius: 6px;
+        }
+        
+        .fab-edit-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
+        }
+        
+        .drawer-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1100;
+            transition: opacity 0.3s;
+        }
+        
+        .drawer-overlay.open {
+            display: block;
+        }
+        
+        .drawer-panel {
+            position: fixed;
+            top: 0;
+            left: -340px;
+            width: 320px;
+            height: 100vh;
+            background: var(--card-bg);
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
+            z-index: 1200;
+            transition: left 0.3s ease-in-out;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            overflow-y: auto;
+        }
+        
+        .drawer-panel.open {
+            left: 0;
+        }
+        
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+        
+        .btn-close-drawer {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
             cursor: pointer;
-            font-weight: 600;
-            font-size: 0.875rem;
-            transition: background 0.15s;
-            box-shadow: var(--shadow-sm);
+            color: var(--text-muted);
+        }
+        /* --- BOTTOM NAVIGATION --- */
+        
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            z-index: 1000;
         }
         
-        .btn-primary:hover {
-            background: var(--primary-hover);
-        }
-        
-        .btn-secondary {
-            background: #ffffff;
-            color: var(--text-main);
-            border: 1px solid var(--border);
-            padding: 0.5rem 0.9rem;
-            border-radius: 6px;
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            color: var(--text-muted);
             cursor: pointer;
-            font-weight: 500;
-            font-size: 0.85rem;
-            transition: all 0.15s;
+            font-size: 0.75rem;
+            gap: 4px;
         }
         
-        .btn-secondary:hover {
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        
+        .nav-item.active {
+            color: var(--primary);
+        }
+        /* --- MODAL STYLES --- */
+        
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+        
+        .modal-content {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .day-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        
+        .day-options label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .club-item {
             background: #f8fafc;
-            border-color: var(--border-hover);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .club-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 6px;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- View 0: Authentication Screen -->
-    <div id="view-auth" class="auth-overlay">
+    <!-- AUTHENTICATION VIEW -->
+    <div id="view-auth" class="auth-container">
         <div class="auth-card">
-            <h2>SchedMaster</h2>
-            <p class="subtitle">Faculty Schedule Management Portal</p>
-
             <div class="auth-tabs">
-                <button class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+                <button class="auth-tab active" onclick="switchAuthTab('login')">Log In</button>
                 <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
             </div>
 
             <form id="form-login" class="auth-form active" onsubmit="handleLogin(event)">
                 <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="login-user" required placeholder="Enter your username">
+                    <label>Full Name</label>
+                    <input type="text" id="login-name" required placeholder="Enter full name">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="login-pass" required placeholder="••••••••">
+                    <input type="password" id="login-pass" required placeholder="Enter password">
                 </div>
-                <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">Log In</button>
+                <button type="submit" class="btn">Log In</button>
             </form>
 
             <form id="form-signup" class="auth-form" onsubmit="handleSignup(event)">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" id="signup-name" required placeholder="Prof. Jane Doe">
-                </div>
-                <div class="form-group">
-                    <label>Username</label>
-                    <input type="text" id="signup-user" required placeholder="Choose a username">
+                    <input type="text" id="signup-name" required placeholder="Enter full name">
                 </div>
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" id="signup-pass" required placeholder="••••••••">
+                    <input type="password" id="signup-pass" required placeholder="Create password">
                 </div>
-                <button type="submit" class="btn-primary" style="margin-top: 0.5rem;">Create Account</button>
+                <button type="submit" class="btn">Sign Up</button>
             </form>
         </div>
     </div>
 
-    <!-- Main Application Portal -->
-    <div id="main-portal" style="display: none;">
-        <nav>
+    <!-- MAIN PORTAL -->
+    <div id="main-portal">
+        <header>
             <div class="brand-logo">
-                <div class="logo-icon">S</div>
+                <div class="brand-icon">s</div>
                 <span>SchedMaster</span>
             </div>
-            <div class="nav-links">
-                <a class="nav-link" onclick="showView('departments')" id="nav-departments">Departments</a>
-                <a class="nav-link active" onclick="showView('timetable')" id="nav-timetable">Timetable</a>
-                <button class="btn-disconnect" onclick="disconnectPortal()">Disconnect</button>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <button class="btn" style="padding: 6px 12px; font-size:0.8rem; background: #e2e8f0; color: var(--text-main);" onclick="openModeChoiceModal()">Change Mode</button>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                    Active Faculty: <b id="user-display-name" style="color: var(--text-main);"></b>
+                </div>
             </div>
-        </nav>
+        </header>
 
-        <div class="container">
-
-            <!-- View 1: Department Selection -->
-            <div id="view-departments" class="view-section">
-                <h2 style="font-size: 1.5rem; font-weight: 700;">Select Faculty Department</h2>
-                <p style="color: var(--text-muted); margin-top: 0.2rem;">Choose a department workspace to configure schedules</p>
-
-                <div class="dept-card-grid">
-                    <div class="dept-card" onclick="selectDept('JHS')">
-                        <h3>JHS</h3>
-                        <p>Junior High School Workspace</p>
-                    </div>
-                    <div class="dept-card" onclick="selectDept('SHS')">
-                        <h3>SHS</h3>
-                        <p>Senior High School Workspace</p>
-                    </div>
+        <!-- VIEW: DEPARTMENTS (DAILY SCHEDULE) -->
+        <div id="view-departments" class="view-content active">
+            <div class="workspace-banner">
+                <div>
+                    <h2>Select Department</h2>
+                    <p>Choose a department workspace to continue</p>
                 </div>
             </div>
 
-            <!-- View 2: Timetable Grid & Scheduler -->
-            <div id="view-timetable" class="view-section active">
-                <div class="header-bar">
+            <div id="dept-selection" class="selection-grid">
+                <div class="select-card" onclick="selectDept('JHS')">Junior High School (JHS)</div>
+                <div class="select-card" onclick="selectDept('SHS')">Senior High School (SHS)</div>
+            </div>
+
+            <div id="jhs-tracks" style="display: none; margin-top: 1.5rem;">
+                <button class="btn" onclick="backToDept()" style="margin-bottom: 1rem; padding: 6px 12px; font-size:0.8rem;">&larr; Back</button>
+                <div class="selection-grid">
+                    <div class="select-card" onclick="selectTrack('ICT')">ICT Track</div>
+                    <div class="select-card" onclick="selectTrack('REGULAR')">REGULAR Track</div>
+                </div>
+            </div>
+
+            <div id="section-selection" style="display: none; margin-top: 1.5rem;">
+                <button class="btn" onclick="backToTracks()" style="margin-bottom: 1rem; padding: 6px 12px; font-size:0.8rem;">&larr; Back</button>
+                <div id="section-grid" class="selection-grid"></div>
+            </div>
+        </div>
+
+        <!-- VIEW: DAILY SCHEDULE (TIMETABLE) -->
+        <div id="view-schedule" class="view-content">
+            <div class="workspace-banner">
+                <div>
+                    <h2 id="dept-workspace-title">JHS Department Workspace</h2>
+                    <p>Active Faculty: <span id="banner-faculty"></span></p>
+                </div>
+                <button class="btn" style="background:#fff; color:var(--text-main); border:1px solid var(--border-color);" onclick="switchMainView('departments')">Schedule (Switch Dept)</button>
+            </div>
+
+            <div class="grid-layout">
+                <!-- TIMETABLE DISPLAY -->
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TIME SLOT</th>
+                                <th>MONDAY</th>
+                                <th>TUESDAY</th>
+                                <th>WEDNESDAY</th>
+                                <th>THURSDAY</th>
+                                <th>FRIDAY</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timetable-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- FLOATING PENCIL BUTTON -->
+            <button class="fab-edit-btn" onclick="toggleDrawer()" title="Open Schedule Editor">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+            </button>
+
+            <!-- LEFT-SIDE SLIDING DRAWER CONTROL PANEL -->
+            <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
+            <div id="drawer-panel" class="drawer-panel">
+                <div class="drawer-header">
                     <div>
-                        <h2 id="dept-workspace-title">JHS Department Workspace</h2>
-                        <span style="font-size: 0.85rem; color: var(--text-muted);">Active Faculty: <strong id="active-user-display" style="color: var(--text-main);">None</strong></span>
+                        <h3>Schedule Editor</h3>
+                        <p style="font-size:0.75rem; color:var(--text-muted);">Clash-Free Scheduler</p>
                     </div>
-                    <div class="header-controls">
-                        <button class="btn-secondary" onclick="resetActiveFaculty()">Clear Faculty List</button>
-                        <button class="btn-secondary" onclick="toggleDepartment()">Switch Department</button>
+                    <button class="btn-close-drawer" onclick="closeDrawer()">&times;</button>
+                </div>
+
+                <div class="form-group">
+                    <label>TARGET SECTION</label>
+                    <select id="form-section" onchange="onSectionChange()"></select>
+                </div>
+
+                <div class="form-group">
+                    <label>SUBJECT</label>
+                    <select id="form-subject"></select>
+                </div>
+
+                <div class="form-group">
+                    <label>TIME SLOT</label>
+                    <select id="form-time"></select>
+                </div>
+
+                <button class="btn" style="margin-top: 0.5rem;" onclick="openDaysModal()">Save Assignment</button>
+                <button class="btn" style="background: var(--primary-dark);" onclick="saveCurrentScheduleToProfile()">Save Schedule to Cloud</button>
+            </div>
+        </div>
+
+        <!-- VIEW: MONTHLY SCHEDULE SERVER -->
+        <div id="view-monthly" class="view-content">
+            <!-- MONTH SELECTION -->
+            <div id="monthly-month-select">
+                <div class="workspace-banner">
+                    <div>
+                        <h2>Monthly Schedule Server</h2>
+                        <p>Select a month to view and manage club schedules</p>
+                    </div>
+                </div>
+                <div class="selection-grid" id="months-grid"></div>
+            </div>
+
+            <!-- WEEK SELECTION -->
+            <div id="monthly-week-select" style="display: none;">
+                <button class="btn" onclick="backToMonths()" style="margin-bottom: 1rem; padding: 6px 12px; font-size:0.8rem;">&larr; Back to Months</button>
+                <div class="workspace-banner">
+                    <div>
+                        <h2 id="selected-month-title">Month</h2>
+                        <p>Select a week</p>
+                    </div>
+                </div>
+                <div class="selection-grid">
+                    <div class="select-card" onclick="selectWeek('Week 1')">Week 1</div>
+                    <div class="select-card" onclick="selectWeek('Week 2')">Week 2</div>
+                    <div class="select-card" onclick="selectWeek('Week 3')">Week 3</div>
+                    <div class="select-card" onclick="selectWeek('Week 4')">Week 4</div>
+                </div>
+            </div>
+
+            <!-- BLANK SCHEDULE GRID WITH CLUB MANAGEMENT -->
+            <div id="monthly-grid-view" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <button class="btn" onclick="backToWeeks()" style="padding: 6px 12px; font-size:0.8rem;">&larr; Back to Weeks</button>
+                    <button class="btn" style="background: #64748b;" onclick="switchMainView('departments')">Go to Schedule (JHS/SHS)</button>
+                </div>
+                <div class="workspace-banner">
+                    <div>
+                        <h2 id="monthly-grid-title">Monthly Schedule Grid</h2>
+                        <p>Monday to Friday event viewer</p>
                     </div>
                 </div>
 
-                <div class="timetable-layout">
-                    <div class="table-container">
-                        <table class="grid-table">
+                <div class="monthly-layout">
+                    <!-- BLANK TIMETABLE (NO TIME SLOTS) -->
+                    <div class="table-wrapper">
+                        <table>
                             <thead>
                                 <tr>
-                                    <th>TIME SLOT</th>
                                     <th>MONDAY</th>
                                     <th>TUESDAY</th>
                                     <th>WEDNESDAY</th>
@@ -609,70 +735,195 @@
                                     <th>FRIDAY</th>
                                 </tr>
                             </thead>
-                            <tbody id="timetable-body">
+                            <tbody>
+                                <tr>
+                                    <td id="m-cell-MONDAY"></td>
+                                    <td id="m-cell-TUESDAY"></td>
+                                    <td id="m-cell-WEDNESDAY"></td>
+                                    <td id="m-cell-THURSDAY"></td>
+                                    <td id="m-cell-FRIDAY"></td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div>
-                        <div class="sidebar-card">
-                            <h3>Clash-Free Scheduler</h3>
-                            <p style="font-size:0.775rem; color:var(--text-muted); margin-bottom:1.25rem;">Automatic conflict resolution enabled.</p>
-
-                            <div class="form-group">
-                                <label for="view-section-filter">Target Section</label>
-                                <select id="view-section-filter" onchange="onSectionFilterChange()"></select>
-                            </div>
-                            <div class="form-group">
-                                <label>Subject</label>
-                                <select id="form-subject"></select>
-                            </div>
-                            <div class="form-group">
-                                <label>Day of Week</label>
-                                <select id="form-day">
-                                    <option value="MONDAY">Monday</option>
-                                    <option value="TUESDAY">Tuesday</option>
-                                    <option value="WEDNESDAY">Wednesday</option>
-                                    <option value="THURSDAY">Thursday</option>
-                                    <option value="FRIDAY">Friday</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Time Slot</label>
-                                <select id="form-time">
-                                    <option value="7:30 AM - 8:30 AM">7:30 AM - 8:30 AM</option>
-                                    <option value="8:30 AM - 9:30 AM">8:30 AM - 9:30 AM</option>
-                                    <option value="10:00 AM - 11:00 AM">10:00 AM - 11:00 AM</option>
-                                    <option value="11:00 AM - 12:00 PM">11:00 AM - 12:00 PM</option>
-                                    <option value="1:00 PM - 2:00 PM">1:00 PM - 2:00 PM</option>
-                                    <option value="2:00 PM - 3:00 PM">2:00 PM - 3:00 PM</option>
-                                </select>
-                            </div>
-                            <button class="btn-primary" onclick="addAssignment()">Save Assignment</button>
+                    <!-- SIDEBAR: CLUB MANAGEMENT -->
+                    <div class="control-card">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3>Clubs & Events</h3>
+                            <button class="btn btn-success" style="padding: 4px 8px; font-size:0.75rem;" onclick="openAddClubModal()">+ Add Club</button>
                         </div>
+                        <p>Manage clubs and set schedule events.</p>
 
-                        <div class="sidebar-card">
-                            <h3>Workspace Options</h3>
-                            <p style="font-size:0.775rem; color:var(--text-muted); margin-bottom:1rem;">Manage section data</p>
-                            <button class="btn-primary" style="background:var(--danger);" onclick="clearTeacherSchedule()">Clear Current Section Schedule</button>
+                        <div id="clubs-list-container" style="max-height: 400px; overflow-y: auto;">
+                            <!-- Clubs will be rendered here -->
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <!-- VIEW: PROFILE -->
+        <div id="view-profile" class="view-content">
+            <div class="workspace-banner">
+                <div>
+                    <h2>User Profile</h2>
+                    <p>Manage your account and saved schedules</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+                <button class="btn" onclick="showMySchedules()">My Schedule</button>
+                <button class="btn btn-danger" onclick="handleLogout()">Log Out</button>
+            </div>
+
+            <div id="my-schedules-container" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>My Schedule Grid</h3>
+                    <button class="btn btn-danger" onclick="clearMySchedule()" style="padding: 5px 10px; font-size:0.8rem;">Clear My Grid</button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>TIME SLOT</th>
+                                <th>MONDAY</th>
+                                <th>TUESDAY</th>
+                                <th>WEDNESDAY</th>
+                                <th>THURSDAY</th>
+                                <th>FRIDAY</th>
+                            </tr>
+                        </thead>
+                        <tbody id="profile-timetable-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM NAVIGATION -->
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchMainView('departments')">
+                <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                <span>SCHEDULE</span>
+            </button>
+            <button class="nav-item" onclick="openMonthlyViewDirect()">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                <span>MONTHLY</span>
+            </button>
+            <button class="nav-item" onclick="switchMainView('profile')">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span>PROFILE</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- MODAL: SCHEDULE CHOICE UPON LOGIN -->
+    <div id="modal-mode-choice" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <h3 style="margin-bottom: 10px;">Select Schedule Type</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Choose where you want to navigate</p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="btn" onclick="chooseMode('daily')">Daily Schedule (JHS/SHS)</button>
+                <button class="btn" style="background: var(--primary-dark);" onclick="chooseMode('monthly')">Monthly Schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: DAYS POPUP -->
+    <div id="modal-days" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="font-size:1rem; margin-bottom:10px;">Select Days</h3>
+            <div class="day-options">
+                <label><input type="checkbox" class="day-checkbox" value="MONDAY"> Monday</label>
+                <label><input type="checkbox" class="day-checkbox" value="TUESDAY"> Tuesday</label>
+                <label><input type="checkbox" class="day-checkbox" value="WEDNESDAY"> Wednesday</label>
+                <label><input type="checkbox" class="day-checkbox" value="THURSDAY"> Thursday</label>
+                <label><input type="checkbox" class="day-checkbox" value="FRIDAY"> Friday</label>
+                <hr style="border: 0; border-top: 1px solid var(--border-color);">
+                <label><input type="checkbox" id="select-all-days" onchange="toggleSelectAllDays(this)"> <b>Select All</b></label>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-danger" style="padding: 6px 12px;" onclick="closeDaysModal()">Cancel</button>
+                <button class="btn" style="padding: 6px 12px;" onclick="applyDaysSelection()">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD CLUB -->
+    <div id="modal-add-club" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="font-size:1rem; margin-bottom:10px;">Create New Club</h3>
+            <div class="form-group">
+                <label>Club Name</label>
+                <input type="text" id="new-club-name" placeholder="e.g., Coding Club">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+                <button class="btn btn-danger" style="padding: 6px 12px;" onclick="closeAddClubModal()">Cancel</button>
+                <button class="btn" style="padding: 6px 12px;" onclick="confirmAddClub()">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD CLUB SCHEDULE EVENT -->
+    <div id="modal-add-event" class="modal-overlay">
+        <div class="modal-content">
+            <h3 style="font-size:1rem; margin-bottom:10px;">Add Schedule Event</h3>
+            <input type="hidden" id="event-club-id">
+            <div class="form-group">
+                <label>Select Day</label>
+                <select id="event-day">
+                    <option value="MONDAY">Monday</option>
+                    <option value="TUESDAY">Tuesday</option>
+                    <option value="WEDNESDAY">Wednesday</option>
+                    <option value="THURSDAY">Thursday</option>
+                    <option value="FRIDAY">Friday</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-top: 10px;">
+                <label>Event Description</label>
+                <input type="text" id="event-text" placeholder="e.g., Meeting at Room 101">
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
+                <button class="btn btn-danger" style="padding: 6px 12px;" onclick="closeAddEventModal()">Cancel</button>
+                <button class="btn" style="padding: 6px 12px;" onclick="confirmAddEvent()">Save Event</button>
+            </div>
         </div>
     </div>
 
     <script>
+        /* FIREBASE INITIALIZATION FOR REALTIME MULTI-DEVICE SYNC */
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "schedmaster.firebaseapp.com",
+            databaseURL: "https://schedmaster-default-rtdb.firebaseio.com",
+            projectId: "schedmaster",
+            storageBucket: "schedmaster.appspot.com",
+            messagingSenderId: "1234567890",
+            appId: "YOUR_APP_ID"
+        };
+
+        // Subukan i-initialize ang Firebase. Mag-fall back sa localStorage kapag kulang ang config.
+        let db = null;
+        try {
+            if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.database();
+            }
+        } catch (err) {
+            console.warn("Firebase not configured properly. Falling back to local offline mode.");
+        }
+
         const DATA = {
             JHS: {
-                sections: [
-                    "Grade 7 - CYBERNAUTS", "Grade 7 - OCAMPO", "Grade 7 - FLORES",
-                    "Grade 8 - PYTHON", "Grade 8 - HOPE", "Grade 8 - LOVE",
-                    "Grade 9 - AZURE", "Grade 9 - NARRA", "Grade 9 - YAKAL",
-                    "Grade 10 - AI", "Grade 10 - LUNA", "Grade 10 - RIZAL"
+                ICT: ["Grade 7 - CYBERNAUTS", "Grade 8 - PYTHON", "Grade 9 - AZURE", "Grade 10 - AI"],
+                REGULAR: [
+                    "Grade 7 - OCAMPO", "Grade 7 - FLORES",
+                    "Grade 8 - HOPE", "Grade 8 - LOVE",
+                    "Grade 9 - YAKAL", "Grade 9 - NARRA",
+                    "Grade 10 - RIZAL", "Grade 10 - LUNA"
                 ],
-                subjects: ["Science", "Mathematics", "English", "Filipino", "AP", "MAPEH", "TLE", "ESP"]
+                subjects: ["Science", "Mathematics", "English", "Filipino", "Apan", "MAPEH", "TLE", "ESP"]
             },
             SHS: {
                 sections: [
@@ -683,69 +934,82 @@
             }
         };
 
-        const TIME_SLOTS = [
-            "7:30 AM - 8:30 AM",
-            "8:30 AM - 9:30 AM",
-            "9:30 AM - 10:00 AM (Morning Recess)",
-            "10:00 AM - 11:00 AM",
-            "11:00 AM - 12:00 PM",
-            "12:00 PM - 1:00 PM (Lunch Break)",
-            "1:00 PM - 2:00 PM",
-            "2:00 PM - 3:00 PM"
+        const SCHOOL_MONTHS = ["August", "September", "October", "November", "December", "January", "February", "March", "April", "May"];
+
+        const TIME_SLOTS_ICT = [
+            "7:30 AM - 8:30 AM", "8:30 AM - 9:30 AM", "9:30 AM - 10:00 AM (Morning Recess)",
+            "10:00 AM - 11:00 AM", "11:00 AM - 12:00 PM", "12:00 PM - 1:00 PM (Lunch Break)",
+            "1:00 PM - 2:00 PM", "2:00 PM - 3:00 PM", "3:00 PM - 4:15 PM", "4:15 PM - 5:15 PM"
+        ];
+
+        const TIME_SLOTS_REGULAR = [
+            "7:30 AM - 8:30 AM", "8:30 AM - 9:30 AM", "9:30 AM - 10:00 AM (Morning Recess)",
+            "10:00 AM - 11:00 AM", "11:00 AM - 12:00 PM", "12:00 PM - 1:00 PM (Lunch Break)",
+            "1:00 PM - 2:00 PM", "2:00 PM - 3:00 PM", "3:00 PM - 4:15 PM"
         ];
 
         const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"];
 
-        let currentDept = "JHS";
-        let activeSection = "";
-        let activeUser = sessionStorage.getItem('schedmaster_current_user') || null;
+        let currentUser = null;
+        let registeredUsers = JSON.parse(localStorage.getItem('app_users')) || {};
+        let userSchedules = JSON.parse(localStorage.getItem('app_schedules')) || [];
+        let clubsData = JSON.parse(localStorage.getItem('app_clubs')) || [];
 
-        let schedules = JSON.parse(localStorage.getItem('schedmaster_schedules')) || [];
-        let users = JSON.parse(localStorage.getItem('schedmaster_users')) || {
-            "admin": "admin123"
-        };
-        let activeTeachers = JSON.parse(localStorage.getItem('schedmaster_teachers')) || [];
+        let currentDept = 'JHS';
+        let currentTrack = 'REGULAR';
+        let activeSection = '';
+        let activeTimeSlots = TIME_SLOTS_REGULAR;
+        let workingDraft = [];
 
-        function saveToStorage() {
-            // Deduplicate activeTeachers case-insensitively before storing
-            activeTeachers = [...new Set(activeTeachers.map(t => t.trim()))];
-            localStorage.setItem('schedmaster_schedules', JSON.stringify(schedules));
-            localStorage.setItem('schedmaster_users', JSON.stringify(users));
-            localStorage.setItem('schedmaster_teachers', JSON.stringify(activeTeachers));
+        let selectedMonth = '';
+        let selectedWeek = '';
+
+        /* REALTIME LISTENERS (AUTOMATICALLY UPDATES ACROSS DEVICES) */
+        function initRealtimeListeners() {
+            if (!db) return;
+
+            // 1. Live Sync Schedules
+            db.ref('schedules').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    userSchedules = Object.values(data);
+                    localStorage.setItem('app_schedules', JSON.stringify(userSchedules));
+
+                    if (document.getElementById('view-schedule').classList.contains('active')) {
+                        renderTimetable();
+                    }
+                    if (document.getElementById('my-schedules-container').style.display === 'block') {
+                        showMySchedules();
+                    }
+                }
+            });
+
+            // 2. Live Sync Clubs & Events
+            db.ref('clubs').on('value', (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    clubsData = Object.values(data);
+                    localStorage.setItem('app_clubs', JSON.stringify(clubsData));
+
+                    if (document.getElementById('monthly-grid-view').style.display === 'block') {
+                        renderMonthlyGridAndClubs();
+                    }
+                }
+            });
         }
 
-        window.addEventListener('storage', (e) => {
-            if (e.key === 'schedmaster_schedules') {
-                schedules = JSON.parse(e.newValue) || [];
-                renderTimetable();
-            }
-            if (e.key === 'schedmaster_teachers') {
-                activeTeachers = JSON.parse(e.newValue) || [];
-                updateActiveFacultyDisplay();
-            }
-            if (e.key === 'schedmaster_users') {
-                users = JSON.parse(e.newValue) || {
-                    "admin": "admin123"
-                };
-            }
-        });
-
-        // Deduplicate faculty array display
-        function updateActiveFacultyDisplay() {
-            const displayEl = document.getElementById('active-user-display');
-            if (displayEl) {
-                const uniqueFaculty = [...new Set(activeTeachers.map(t => t.toLowerCase()))]
-                    .map(lower => activeTeachers.find(t => t.toLowerCase() === lower));
-                displayEl.innerText = uniqueFaculty.length > 0 ? uniqueFaculty.join(', ') : 'None';
-            }
+        /* DRAWER CONTROLS */
+        function toggleDrawer() {
+            document.getElementById('drawer-overlay').classList.toggle('open');
+            document.getElementById('drawer-panel').classList.toggle('open');
         }
 
-        function resetActiveFaculty() {
-            activeTeachers = activeUser ? [activeUser] : [];
-            saveToStorage();
-            updateActiveFacultyDisplay();
+        function closeDrawer() {
+            document.getElementById('drawer-overlay').classList.remove('open');
+            document.getElementById('drawer-panel').classList.remove('open');
         }
 
+        /* AUTH LOGIC */
         function switchAuthTab(tab) {
             document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
@@ -758,132 +1022,241 @@
             }
         }
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const user = document.getElementById('login-user').value.trim();
-            const pass = document.getElementById('login-pass').value;
-
-            if (users[user] && users[user] === pass) {
-                activeUser = user;
-                sessionStorage.setItem('schedmaster_current_user', activeUser);
-                enterPortal();
-            } else {
-                alert('Invalid credentials. (Demo login: admin / admin123)');
-            }
-        }
-
         function handleSignup(e) {
             e.preventDefault();
             const name = document.getElementById('signup-name').value.trim();
-            const user = document.getElementById('signup-user').value.trim();
             const pass = document.getElementById('signup-pass').value;
 
-            if (users[user]) {
-                alert('Username already exists. Please select another.');
+            if (registeredUsers[name]) {
+                alert('Account already exists! Please log in.');
                 return;
             }
 
-            users[user] = pass;
-            activeUser = name || user;
-            sessionStorage.setItem('schedmaster_current_user', activeUser);
-            saveToStorage();
+            registeredUsers[name] = pass;
+            localStorage.setItem('app_users', JSON.stringify(registeredUsers));
             alert('Account created successfully!');
-            enterPortal();
+            switchAuthTab('login');
         }
 
-        function enterPortal() {
+        function handleLogin(e) {
+            e.preventDefault();
+            const name = document.getElementById('login-name').value.trim();
+            const pass = document.getElementById('login-pass').value;
+
+            if (!registeredUsers[name] || registeredUsers[name] !== pass) {
+                alert('Invalid credentials! Please sign up first.');
+                return;
+            }
+
+            currentUser = name;
+            document.getElementById('user-display-name').innerText = currentUser;
+            document.getElementById('banner-faculty').innerText = currentUser;
             document.getElementById('view-auth').style.display = 'none';
             document.getElementById('main-portal').style.display = 'block';
 
-            // Add user without adding case-insensitive duplicate entries
-            const exists = activeTeachers.some(t => t.toLowerCase() === activeUser.toLowerCase());
-            if (!exists) {
-                activeTeachers.push(activeUser);
-            }
-            saveToStorage();
-
-            updateActiveFacultyDisplay();
-            init();
+            initRealtimeListeners();
+            openModeChoiceModal();
         }
 
-        function init() {
+        function handleLogout() {
+            currentUser = null;
+            document.getElementById('main-portal').style.display = 'none';
+            document.getElementById('view-auth').style.display = 'flex';
+            document.getElementById('my-schedules-container').style.display = 'none';
+        }
+
+        /* POPUP MODE CHOICE (DAILY VS MONTHLY) */
+        function openModeChoiceModal() {
+            document.getElementById('modal-mode-choice').style.display = 'flex';
+        }
+
+        function chooseMode(mode) {
+            document.getElementById('modal-mode-choice').style.display = 'none';
+            if (mode === 'daily') {
+                switchMainView('departments');
+                selectDept('JHS');
+            } else {
+                openMonthlyViewDirect();
+            }
+        }
+
+        function switchMainView(viewName) {
+            document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            document.getElementById(`view-${viewName}`).classList.add('active');
+            const navIndex = viewName === 'departments' || viewName === 'schedule' ? 0 : viewName === 'monthly' ? 1 : 2;
+            document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+        }
+
+        /* DEPARTMENT & TRACK SELECTION */
+        function selectDept(dept) {
+            currentDept = dept;
+            document.getElementById('dept-selection').style.display = 'none';
+
+            if (dept === 'JHS') {
+                document.getElementById('jhs-tracks').style.display = 'block';
+            } else {
+                currentTrack = 'REGULAR';
+                activeTimeSlots = TIME_SLOTS_REGULAR;
+                showSections(DATA.SHS.sections);
+            }
+        }
+
+        function backToDept() {
+            document.getElementById('jhs-tracks').style.display = 'none';
+            document.getElementById('dept-selection').style.display = 'grid';
+        }
+
+        function selectTrack(track) {
+            currentTrack = track;
+            document.getElementById('jhs-tracks').style.display = 'none';
+
+            if (track === 'ICT') {
+                activeTimeSlots = TIME_SLOTS_ICT;
+                showSections(DATA.JHS.ICT);
+            } else {
+                activeTimeSlots = TIME_SLOTS_REGULAR;
+                showSections(DATA.JHS.REGULAR);
+            }
+        }
+
+        function backToTracks() {
+            document.getElementById('section-selection').style.display = 'none';
+            if (currentDept === 'JHS') {
+                document.getElementById('jhs-tracks').style.display = 'block';
+            } else {
+                document.getElementById('dept-selection').style.display = 'grid';
+            }
+        }
+
+        function showSections(sections) {
+            const grid = document.getElementById('section-grid');
+            grid.innerHTML = '';
+            sections.forEach(sec => {
+                const card = document.createElement('div');
+                card.className = 'select-card';
+                card.innerText = sec;
+                card.onclick = () => chooseSection(sec);
+                grid.appendChild(card);
+            });
+            document.getElementById('section-selection').style.display = 'block';
+        }
+
+        function chooseSection(section) {
+            activeSection = section;
+            document.getElementById('dept-workspace-title').innerText = `${currentDept} Department Workspace`;
             populateDropdowns();
             renderTimetable();
-        }
-
-        function showView(viewId) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-
-            const targetView = document.getElementById(`view-${viewId}`);
-            const targetNav = document.getElementById(`nav-${viewId}`);
-
-            if (targetView) targetView.classList.add('active');
-            if (targetNav) targetNav.classList.add('active');
-        }
-
-        function selectDept(deptKey) {
-            currentDept = deptKey;
-            const titleEl = document.getElementById('dept-workspace-title');
-            if (titleEl) {
-                titleEl.innerText = `${deptKey} Department Workspace`;
-            }
-            populateDropdowns();
-            renderTimetable();
-            showView('timetable');
-        }
-
-        function toggleDepartment() {
-            const nextDept = currentDept === 'JHS' ? 'SHS' : 'JHS';
-            selectDept(nextDept);
+            switchMainView('schedule');
         }
 
         function populateDropdowns() {
-            const viewFilterSelect = document.getElementById('view-section-filter');
-            const subjectSelect = document.getElementById('form-subject');
+            const secSelect = document.getElementById('form-section');
+            const subSelect = document.getElementById('form-subject');
+            const timeSelect = document.getElementById('form-time');
 
-            if (DATA[currentDept]) {
-                const sectionOptions = DATA[currentDept].sections.map(s => `<option value="${s}">${s}</option>`).join('');
+            let sections = currentDept === 'JHS' ? (currentTrack === 'ICT' ? DATA.JHS.ICT : DATA.JHS.REGULAR) : DATA.SHS.sections;
+            secSelect.innerHTML = sections.map(s => `<option value="${s}" ${s === activeSection ? 'selected' : ''}>${s}</option>`).join('');
 
-                if (viewFilterSelect) viewFilterSelect.innerHTML = sectionOptions;
-                if (subjectSelect) subjectSelect.innerHTML = DATA[currentDept].subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+            const subjects = currentDept === 'JHS' ? DATA.JHS.subjects : DATA.SHS.subjects;
+            subSelect.innerHTML = subjects.map(s => `<option value="${s}">${s}</option>`).join('');
 
-                activeSection = DATA[currentDept].sections[0];
-                if (viewFilterSelect) viewFilterSelect.value = activeSection;
-            }
+            const availableSlots = activeTimeSlots.filter(s => !s.includes("Recess") && !s.includes("Break"));
+            timeSelect.innerHTML = availableSlots.map(t => `<option value="${t}">${t}</option>`).join('');
         }
 
-        function onSectionFilterChange() {
-            const viewFilterSelect = document.getElementById('view-section-filter');
-            if (viewFilterSelect) {
-                activeSection = viewFilterSelect.value;
-                renderTimetable();
+        function onSectionChange() {
+            activeSection = document.getElementById('form-section').value;
+            renderTimetable();
+        }
+
+        /* DAYS MODAL */
+        function openDaysModal() {
+            document.getElementById('modal-days').style.display = 'flex';
+        }
+
+        function closeDaysModal() {
+            document.getElementById('modal-days').style.display = 'none';
+        }
+
+        function toggleSelectAllDays(master) {
+            document.querySelectorAll('.day-checkbox').forEach(cb => cb.checked = master.checked);
+        }
+
+        function applyDaysSelection() {
+            const section = document.getElementById('form-section').value;
+            const subject = document.getElementById('form-subject').value;
+            const time = document.getElementById('form-time').value;
+
+            const selectedDays = [];
+            document.querySelectorAll('.day-checkbox:checked').forEach(cb => selectedDays.push(cb.value));
+
+            if (selectedDays.length === 0) {
+                alert('Please select at least one day!');
+                return;
             }
+
+            selectedDays.forEach(day => {
+                const idx = workingDraft.findIndex(s => s.section === section && s.day === day && s.time === time);
+                if (idx > -1) {
+                    workingDraft[idx].subject = subject;
+                } else {
+                    workingDraft.push({
+                        id: Date.now() + Math.random(),
+                        section,
+                        subject,
+                        day,
+                        time
+                    });
+                }
+            });
+
+            closeDaysModal();
+            closeDrawer();
+            renderTimetable();
+        }
+
+        function deleteEntry(id) {
+            workingDraft = workingDraft.filter(s => s.id !== id);
+            renderTimetable();
         }
 
         function renderTimetable() {
             const tbody = document.getElementById('timetable-body');
-            if (!tbody) return;
             tbody.innerHTML = '';
 
-            TIME_SLOTS.forEach(slot => {
-                const isBreak = slot.includes("Recess") || slot.includes("Break");
-                let tr = document.createElement('tr');
+            activeTimeSlots.forEach(slot => {
+                        const isBreak = slot.includes("Recess") || slot.includes("Break");
+                        let tr = document.createElement('tr');
 
-                if (isBreak) {
-                    tr.classList.add('break-row');
-                    tr.innerHTML = `<td>${slot}</td><td colspan="5">${slot.split(' ')[2].replace('(', '')} Break</td>`;
-                } else {
-                    let timeTd = `<td>${slot}</td>`;
-                    let daysHtml = DAYS.map(day => {
-                        const entry = schedules.find(s => s.dept === currentDept && s.section === activeSection && s.day === day && s.time === slot);
-                        if (entry) {
-                            return `<td>
-                                <div class="slot-item">
-                                    <button class="btn-del" onclick="deleteAssignment(${entry.id})">&times;</button>
+                        if (isBreak) {
+                            tr.classList.add('break-row');
+                            tr.innerHTML = `<td class="time-col">${slot}</td><td colspan="5" style="color:#94a3b8;">- Break</td>`;
+                        } else {
+                            let timeTd = `<td class="time-col">${slot}</td>`;
+                            let daysHtml = DAYS.map(day => {
+                                        // Combines working draft & synced live schedules from other users
+                                        let entry = workingDraft.find(s => s.section === activeSection && s.day === day && s.time === slot);
+                                        let owner = currentUser;
+
+                                        if (!entry) {
+                                            for (let userSched of userSchedules) {
+                                                let found = (userSched.entries || []).find(s => s.section === activeSection && s.day === day && s.time === slot);
+                                                if (found) {
+                                                    entry = found;
+                                                    owner = userSched.user;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        if (entry) {
+                                            return `<td>
+                                <div class="slot-card">
+                                    ${owner === currentUser ? `<button class="btn-del" onclick="deleteEntry(${entry.id})">&times;</button>` : ''}
                                     <strong>${entry.subject}</strong>
-                                    <span>${entry.section}</span>
-                                    <div class="teacher-tag">By: ${entry.teacher || 'Faculty'}</div>
+                                    <span>${entry.section} <small>(${owner})</small></span>
                                 </div>
                             </td>`;
                         }
@@ -895,68 +1268,284 @@
             });
         }
 
-        function addAssignment() {
-            const sectionEl = document.getElementById('view-section-filter');
-            const subjectEl = document.getElementById('form-subject');
-            const dayEl = document.getElementById('form-day');
-            const timeEl = document.getElementById('form-time');
-
-            if (!sectionEl || !subjectEl || !dayEl || !timeEl) return;
-
-            const section = sectionEl.value;
-            const subject = subjectEl.value;
-            const day = dayEl.value;
-            const time = timeEl.value;
-
-            const timeClash = schedules.find(s => s.dept === currentDept && s.section === section && s.day === day && s.time === time);
-            if (timeClash) {
-                alert(`Conflict Warning: ${timeClash.subject} is already scheduled for ${section} at this slot by ${timeClash.teacher || 'another teacher'}.`);
+        /* SAVE SCHEDULE - SYNCED REALTIME TO FIREBASE CLOUD */
+        function saveCurrentScheduleToProfile() {
+            if (workingDraft.length === 0) {
+                alert('Please add entries to the schedule first!');
                 return;
             }
 
-            schedules.push({
+            const payload = {
+                user: currentUser,
+                entries: [...workingDraft],
+                timeSlots: activeTimeSlots,
+                updatedAt: Date.now()
+            };
+
+            // 1. Update Local
+            userSchedules = userSchedules.filter(s => s.user !== currentUser);
+            userSchedules.push(payload);
+            localStorage.setItem('app_schedules', JSON.stringify(userSchedules));
+
+            // 2. Sync to Cloud
+            if (db) {
+                const cleanUserKey = currentUser.replace(/[.#$/[\]]/g, "_");
+                db.ref('schedules/' + cleanUserKey).set(payload)
+                    .then(() => alert('Schedule saved and synced live across all devices!'))
+                    .catch(err => alert('Cloud sync error: ' + err.message));
+            } else {
+                alert('Schedule saved locally! (Configure Firebase for live multi-device sync)');
+            }
+        }
+
+        /* MONTHLY SCHEDULE SYSTEM */
+        function openMonthlyViewDirect() {
+            switchMainView('monthly');
+            document.getElementById('monthly-month-select').style.display = 'block';
+            document.getElementById('monthly-week-select').style.display = 'none';
+            document.getElementById('monthly-grid-view').style.display = 'none';
+
+            const container = document.getElementById('months-grid');
+            container.innerHTML = '';
+            SCHOOL_MONTHS.forEach(m => {
+                const card = document.createElement('div');
+                card.className = 'select-card';
+                card.innerText = m;
+                card.onclick = () => selectMonth(m);
+                container.appendChild(card);
+            });
+        }
+
+        function selectMonth(m) {
+            selectedMonth = m;
+            document.getElementById('monthly-month-select').style.display = 'none';
+            document.getElementById('monthly-week-select').style.display = 'block';
+            document.getElementById('selected-month-title').innerText = `${selectedMonth} Schedule`;
+        }
+
+        function backToMonths() {
+            document.getElementById('monthly-week-select').style.display = 'none';
+            document.getElementById('monthly-month-select').style.display = 'block';
+        }
+
+        function selectWeek(w) {
+            selectedWeek = w;
+            document.getElementById('monthly-week-select').style.display = 'none';
+            document.getElementById('monthly-grid-view').style.display = 'block';
+            document.getElementById('monthly-grid-title').innerText = `${selectedMonth} - ${selectedWeek}`;
+            renderMonthlyGridAndClubs();
+        }
+
+        function backToWeeks() {
+            document.getElementById('monthly-grid-view').style.display = 'none';
+            document.getElementById('monthly-week-select').style.display = 'block';
+        }
+
+        /* CLUB MANAGEMENT SYSTEM WITH REALTIME SYNC */
+        function openAddClubModal() { document.getElementById('modal-add-club').style.display = 'flex'; }
+        function closeAddClubModal() { document.getElementById('modal-add-club').style.display = 'none'; }
+
+        function confirmAddClub() {
+            const clubName = document.getElementById('new-club-name').value.trim();
+            if (!clubName) {
+                alert('Please enter a club name!');
+                return;
+            }
+
+            const newClub = {
                 id: Date.now(),
-                dept: currentDept,
-                section,
-                subject,
-                day,
-                time,
-                teacher: activeUser
+                name: clubName,
+                createdBy: currentUser,
+                events: []
+            };
+
+            clubsData.push(newClub);
+            localStorage.setItem('app_clubs', JSON.stringify(clubsData));
+
+            if (db) {
+                db.ref('clubs/' + newClub.id).set(newClub);
+            }
+
+            document.getElementById('new-club-name').value = '';
+            closeAddClubModal();
+            renderMonthlyGridAndClubs();
+        }
+
+        function deleteClub(clubId) {
+            const club = clubsData.find(c => c.id === clubId);
+            if (!club) return;
+
+            if (club.createdBy !== currentUser) {
+                alert(`Permission denied! Only ${club.createdBy} (the creator) can delete this club.`);
+                return;
+            }
+
+            if (confirm(`Are you sure you want to delete "${club.name}"?`)) {
+                clubsData = clubsData.filter(c => c.id !== clubId);
+                localStorage.setItem('app_clubs', JSON.stringify(clubsData));
+
+                if (db) {
+                    db.ref('clubs/' + clubId).remove();
+                }
+
+                renderMonthlyGridAndClubs();
+            }
+        }
+
+        function openAddEventModal(clubId) {
+            document.getElementById('event-club-id').value = clubId;
+            document.getElementById('modal-add-event').style.display = 'flex';
+        }
+
+        function closeAddEventModal() {
+            document.getElementById('modal-add-event').style.display = 'none';
+        }
+
+        function confirmAddEvent() {
+            const clubId = Number(document.getElementById('event-club-id').value);
+            const day = document.getElementById('event-day').value;
+            const text = document.getElementById('event-text').value.trim();
+
+            if (!text) {
+                alert('Please enter event description!');
+                return;
+            }
+
+            const club = clubsData.find(c => c.id === clubId);
+            if (club) {
+                club.events = club.events || [];
+                club.events.push({
+                    id: Date.now(),
+                    month: selectedMonth,
+                    week: selectedWeek,
+                    day: day,
+                    text: text
+                });
+
+                localStorage.setItem('app_clubs', JSON.stringify(clubsData));
+
+                if (db) {
+                    db.ref('clubs/' + clubId).set(club);
+                }
+            }
+
+            document.getElementById('event-text').value = '';
+            closeAddEventModal();
+            renderMonthlyGridAndClubs();
+        }
+
+        function deleteClubEvent(clubId, eventId) {
+            const club = clubsData.find(c => c.id === clubId);
+            if (club) {
+                club.events = club.events.filter(e => e.id !== eventId);
+                localStorage.setItem('app_clubs', JSON.stringify(clubsData));
+
+                if (db) {
+                    db.ref('clubs/' + clubId).set(club);
+                }
+
+                renderMonthlyGridAndClubs();
+            }
+        }
+
+        function renderMonthlyGridAndClubs() {
+            DAYS.forEach(day => {
+                document.getElementById(`m-cell-${day}`).innerHTML = '';
             });
 
-            saveToStorage();
-            renderTimetable();
-        }
+            const clubsContainer = document.getElementById('clubs-list-container');
+            clubsContainer.innerHTML = '';
 
-        function deleteAssignment(id) {
-            schedules = schedules.filter(s => s.id !== id);
-            saveToStorage();
-            renderTimetable();
-        }
-
-        function clearTeacherSchedule() {
-            if (confirm(`Are you sure you want to reset the timetable for ${activeSection}?`)) {
-                schedules = schedules.filter(s => !(s.dept === currentDept && s.section === activeSection));
-                saveToStorage();
-                renderTimetable();
+            if (clubsData.length === 0) {
+                clubsContainer.innerHTML = `<p style="font-size:0.8rem; color:var(--text-muted);">No clubs added yet.</p>`;
             }
+
+            clubsData.forEach(club => {
+                const isOwner = club.createdBy === currentUser;
+                const clubEl = document.createElement('div');
+                clubEl.className = 'club-item';
+
+                clubEl.innerHTML = `
+                    <div class="club-header">
+                        <span>${club.name} <small style="font-weight:normal; color:var(--text-muted); font-size:0.7rem;">(${club.createdBy})</small></span>
+                        <div>
+                            <button class="btn btn-success" style="padding: 2px 6px; font-size:0.7rem;" onclick="openAddEventModal(${club.id})">+ Event</button>
+                            ${isOwner ? `<button class="btn btn-danger" style="padding: 2px 6px; font-size:0.7rem;" onclick="deleteClub(${club.id})">Delete</button>` : ''}
+                        </div>
+                    </div>
+                `;
+                clubsContainer.appendChild(clubEl);
+
+                (club.events || []).forEach(ev => {
+                    if (ev.month === selectedMonth && ev.week === selectedWeek) {
+                        const cell = document.getElementById(`m-cell-${ev.day}`);
+                        if (cell) {
+                            const eventCard = document.createElement('div');
+                            eventCard.className = 'slot-card';
+                            eventCard.innerHTML = `
+                                <button class="btn-del" onclick="deleteClubEvent(${club.id}, ${ev.id})">&times;</button>
+                                <strong>${club.name}</strong>
+                                <span>${ev.text}</span>
+                            `;
+                            cell.appendChild(eventCard);
+                        }
+                    }
+                });
+            });
         }
 
-        function disconnectPortal() {
-            if (activeUser) {
-                activeTeachers = activeTeachers.filter(t => t.toLowerCase() !== activeUser.toLowerCase());
-                saveToStorage();
+        /* PROFILE VIEW */
+        function showMySchedules() {
+            const container = document.getElementById('my-schedules-container');
+            const tbody = document.getElementById('profile-timetable-body');
+            container.style.display = 'block';
+            tbody.innerHTML = '';
+
+            const userSched = userSchedules.find(s => s.user === currentUser);
+
+            if (!userSched || !userSched.entries || userSched.entries.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="padding:20px; color:var(--text-muted);">No saved schedule found.</td></tr>`;
+                return;
             }
-            activeUser = null;
-            sessionStorage.removeItem('schedmaster_current_user');
 
-            document.getElementById('main-portal').style.display = 'none';
-            document.getElementById('view-auth').style.display = 'flex';
+            const slotsToUse = userSched.timeSlots || TIME_SLOTS_REGULAR;
+
+            slotsToUse.forEach(slot => {
+                const isBreak = slot.includes("Recess") || slot.includes("Break");
+                let tr = document.createElement('tr');
+
+                if (isBreak) {
+                    tr.classList.add('break-row');
+                    tr.innerHTML = `<td class="time-col">${slot}</td><td colspan="5" style="color:#94a3b8;">- Break</td>`;
+                } else {
+                    let timeTd = `<td class="time-col">${slot}</td>`;
+                    let daysHtml = DAYS.map(day => {
+                        const entry = userSched.entries.find(s => s.day === day && s.time === slot);
+                        return entry ? `<td>
+                            <div class="slot-card">
+                                <strong>${entry.subject}</strong>
+                                <span>${entry.section}</span>
+                            </div>
+                        </td>` : `<td></td>`;
+                    }).join('');
+                    tr.innerHTML = timeTd + daysHtml;
+                }
+                tbody.appendChild(tr);
+            });
         }
 
-        // Keep active session if page refreshed while logged in
-        if (activeUser) {
-            enterPortal();
+        function clearMySchedule() {
+            if (confirm("Are you sure you want to clear your saved profile schedule?")) {
+                userSchedules = userSchedules.filter(s => s.user !== currentUser);
+                localStorage.setItem('app_schedules', JSON.stringify(userSchedules));
+
+                if (db) {
+                    const cleanUserKey = currentUser.replace(/[.#$/[\]]/g, "_");
+                    db.ref('schedules/' + cleanUserKey).remove();
+                }
+
+                showMySchedules();
+            }
         }
     </script>
 </body>

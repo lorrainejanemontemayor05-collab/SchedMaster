@@ -12,15 +12,16 @@
 
     <style>
          :root {
-            --primary: #0284c7;
-            --primary-dark: #0369a1;
-            --bg-color: #f1f5f9;
+            --primary: #09090b;
+            --primary-hover: #27272a;
+            --bg-color: #f4f4f5;
             --card-bg: #ffffff;
-            --text-main: #334155;
-            --text-muted: #64748b;
-            --border-color: #cbd5e1;
-            --danger: #ef4444;
-            --success: #22c55e;
+            --text-main: #09090b;
+            --text-muted: #71717a;
+            --border-color: #e4e4e7;
+            --danger: #18181b;
+            --accent-slot: #f4f4f5;
+            --accent-border: #a1a1aa;
         }
         
         * {
@@ -36,6 +37,19 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+            overflow-x: hidden;
+        }
+        /* --- CONFETTI CANVAS --- */
+        
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 3000;
         }
         /* --- AUTH SCREEN --- */
         
@@ -49,18 +63,32 @@
         
         .auth-card {
             background: var(--card-bg);
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 400px;
             border: 1px solid var(--border-color);
         }
         
+        .auth-brand {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .auth-brand h1 {
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
         .auth-tabs {
             display: flex;
             margin-bottom: 1.5rem;
-            border-bottom: 2px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
         }
         
         .auth-tab {
@@ -72,18 +100,19 @@
             font-weight: 600;
             cursor: pointer;
             color: var(--text-muted);
+            transition: all 0.2s;
         }
         
         .auth-tab.active {
-            color: var(--primary);
-            border-bottom: 2px solid var(--primary);
-            margin-bottom: -2px;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--text-main);
+            margin-bottom: -1px;
         }
         
         .auth-form {
             display: none;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.2rem;
         }
         
         .auth-form.active {
@@ -101,91 +130,163 @@
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .form-group input,
         .form-group select {
-            padding: 10px;
+            padding: 11px;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 8px;
             outline: none;
             font-size: 0.9rem;
             background-color: #fff;
+            color: var(--text-main);
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--text-main);
         }
         
         .btn {
             background: var(--primary);
             color: white;
-            padding: 10px 15px;
+            padding: 12px 16px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.1s;
             font-size: 0.9rem;
         }
         
         .btn:hover {
-            background: var(--primary-dark);
+            background: var(--primary-hover);
         }
         
-        .btn-danger {
-            background: var(--danger);
+        .btn:active {
+            transform: scale(0.98);
         }
         
-        .btn-danger:hover {
-            background: #dc2626;
+        .btn-secondary {
+            background: #fff;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
         }
         
-        .btn-success {
-            background: var(--success);
-        }
-        
-        .btn-success:hover {
-            background: #16a34a;
+        .btn-secondary:hover {
+            background: #f4f4f5;
         }
         /* --- HEADER & TOP NAV --- */
         
         #main-portal {
             display: none;
             flex: 1;
-            padding-bottom: 70px;
         }
         
         header {
             background: var(--card-bg);
-            padding: 0.75rem 2rem;
+            padding: 0.8rem 2rem;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 20px;
         }
         
         .brand-logo {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-weight: 700;
-            font-size: 1.1rem;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 1.2rem;
             color: var(--text-main);
+            letter-spacing: -0.5px;
+            white-space: nowrap;
         }
         
         .brand-icon {
-            background: var(--primary);
+            background: var(--text-main);
             color: white;
-            width: 28px;
-            height: 28px;
-            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
         }
+        /* --- HEADER PEN BUTTON (MIDDLE SPAN) --- */
+        
+        .header-pen-btn {
+            flex: 1;
+            max-width: 550px;
+            background: var(--primary);
+            color: white;
+            border: 1px solid var(--border-color);
+            padding: 8px 18px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        }
+        
+        .header-pen-btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+        
+        .header-pen-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+        
+        .top-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .top-nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .top-nav-btn:hover {
+            color: var(--text-main);
+            background: #f4f4f5;
+        }
+        
+        .top-nav-btn.active {
+            color: var(--text-main);
+            background: #fff;
+            border-color: var(--border-color);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
         /* --- CONTENT VIEWS --- */
         
         .view-content {
             display: none;
-            padding: 1.5rem 2rem;
+            padding: 2rem;
             max-width: 1300px;
             margin: 0 auto;
         }
@@ -195,9 +296,10 @@
         }
         
         .workspace-banner {
-            background: #e2e8f0;
-            padding: 1rem 1.5rem;
-            border-radius: 8px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem 1.75rem;
+            border-radius: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -205,39 +307,51 @@
         }
         
         .workspace-banner h2 {
-            font-size: 1.1rem;
-            color: #1e293b;
+            font-size: 1.2rem;
+            color: var(--text-main);
+            letter-spacing: -0.3px;
         }
         
         .workspace-banner p {
             font-size: 0.85rem;
             color: var(--text-muted);
+            margin-top: 2px;
         }
-        /* --- LAYOUTS --- */
+        /* --- LAYOUTS & SELECTION GRIDS --- */
         
-        .grid-layout {
-            display: block;
-            width: 100%;
-        }
-        
-        .monthly-layout {
+        .selection-grid {
             display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1rem;
         }
         
-        @media (max-width: 900px) {
-            .monthly-layout {
-                grid-template-columns: 1fr;
-            }
+        .select-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 2rem 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+        
+        .select-card:hover {
+            border-color: var(--text-main);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
         }
         /* --- TIMETABLE TABLE --- */
         
         .table-wrapper {
             background: var(--card-bg);
-            border-radius: 8px;
+            border-radius: 10px;
             border: 1px solid var(--border-color);
             overflow-x: auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02);
         }
         
         table {
@@ -249,39 +363,41 @@
         
         th,
         td {
-            padding: 12px 8px;
+            padding: 14px 10px;
             border: 1px solid var(--border-color);
-            min-width: 100px;
+            min-width: 130px;
             vertical-align: top;
         }
         
         th {
-            background: #f8fafc;
-            color: var(--text-muted);
+            background: #fafafa;
+            color: var(--text-main);
             font-size: 0.75rem;
             text-transform: uppercase;
-            font-weight: 700;
+            font-weight: 800;
+            letter-spacing: 0.5px;
         }
         
         .time-col {
             font-weight: 700;
             color: var(--text-muted);
             font-size: 0.75rem;
-            width: 130px;
-            background: #f8fafc;
+            width: 150px;
+            background: #fafafa;
         }
         
         .break-row {
-            background: #f8fafc;
-            color: #94a3b8;
+            background: #fafafa;
+            color: #a1a1aa;
             font-size: 0.8rem;
+            font-weight: 600;
         }
         
         .slot-card {
-            background: #e0f2fe;
-            border: 1px solid #bae6fd;
-            border-radius: 6px;
-            padding: 6px;
+            background: var(--accent-slot);
+            border: 1px solid var(--accent-border);
+            border-radius: 8px;
+            padding: 8px 10px;
             position: relative;
             text-align: left;
             margin-bottom: 4px;
@@ -289,98 +405,35 @@
         
         .slot-card strong {
             display: block;
-            color: #0369a1;
+            color: var(--text-main);
             font-size: 0.85rem;
         }
         
         .slot-card span {
             display: block;
-            color: #0284c7;
+            color: var(--text-muted);
             font-size: 0.75rem;
+            margin-top: 2px;
         }
         
         .btn-del {
             position: absolute;
-            top: 2px;
-            right: 4px;
+            top: 4px;
+            right: 6px;
             background: none;
             border: none;
-            color: #ef4444;
+            color: var(--text-main);
             font-weight: bold;
             cursor: pointer;
-            font-size: 1rem;
-        }
-        /* --- CONTROL CARDS --- */
-        
-        .control-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 1.25rem;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            height: fit-content;
+            font-size: 1.1rem;
+            line-height: 1;
+            opacity: 0.6;
         }
         
-        .control-card h3 {
-            font-size: 1rem;
-            color: #0f172a;
+        .btn-del:hover {
+            opacity: 1;
         }
-        
-        .control-card p {
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            margin-top: -8px;
-        }
-        
-        .selection-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-        
-        .select-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            padding: 1.25rem;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        .select-card:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-        /* --- FLOATING EDIT BUTTON & LEFT DRAWER --- */
-        
-        .fab-edit-btn {
-            position: fixed;
-            bottom: 75px;
-            left: 20px;
-            width: 52px;
-            height: 52px;
-            border-radius: 50%;
-            background: var(--primary);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-            cursor: pointer;
-            z-index: 1050;
-            transition: transform 0.2s, background 0.2s;
-            border: none;
-        }
-        
-        .fab-edit-btn:hover {
-            background: var(--primary-dark);
-            transform: scale(1.05);
-        }
+        /* --- MODERNIZED DRAWER CONTROL PANEL --- */
         
         .drawer-overlay {
             display: none;
@@ -389,9 +442,9 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
             z-index: 1100;
-            transition: opacity 0.3s;
         }
         
         .drawer-overlay.open {
@@ -401,79 +454,96 @@
         .drawer-panel {
             position: fixed;
             top: 0;
-            left: -340px;
-            width: 320px;
+            right: -400px;
+            width: 380px;
             height: 100vh;
-            background: var(--card-bg);
-            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
+            background: #ffffff;
+            box-shadow: -15px 0 35px rgba(0, 0, 0, 0.18);
             z-index: 1200;
-            transition: left 0.3s ease-in-out;
-            padding: 1.5rem;
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            padding: 2.2rem 1.8rem;
             display: flex;
             flex-direction: column;
-            gap: 1.2rem;
+            gap: 1.4rem;
             overflow-y: auto;
+            border-left: 1px solid var(--border-color);
         }
         
         .drawer-panel.open {
-            left: 0;
+            right: 0;
         }
         
         .drawer-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 10px;
+            border-bottom: 2px solid var(--text-main);
+            padding-bottom: 14px;
+        }
+        
+        .drawer-header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .drawer-header h3 {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+            color: var(--text-main);
+        }
+        
+        .drawer-header span {
+            background: #18181b;
+            color: #fff;
+            font-size: 0.65rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .btn-close-drawer {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
+            background: #f4f4f5;
+            border: 1px solid var(--border-color);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            font-size: 1.2rem;
             cursor: pointer;
-            color: var(--text-muted);
-        }
-        /* --- BOTTOM NAVIGATION --- */
-        
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: var(--card-bg);
-            border-top: 1px solid var(--border-color);
+            color: var(--text-main);
             display: flex;
-            justify-content: space-around;
             align-items: center;
-            z-index: 1000;
+            justify-content: center;
+            transition: all 0.2s;
         }
         
-        .nav-item {
+        .btn-close-drawer:hover {
+            background: var(--text-main);
+            color: #fff;
+        }
+        
+        .add-subject-box {
             display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 0.75rem;
-            gap: 4px;
+            gap: 8px;
+            margin-top: 6px;
         }
         
-        .nav-item svg {
-            width: 22px;
-            height: 22px;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
+        .add-subject-box input {
+            flex: 1;
+            padding: 9px 12px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            outline: none;
+            background: #fafafa;
         }
         
-        .nav-item.active {
-            color: var(--primary);
+        .add-subject-box input:focus {
+            border-color: var(--text-main);
+            background: #fff;
         }
         /* --- MODAL STYLES --- */
         
@@ -484,7 +554,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(3px);
             justify-content: center;
             align-items: center;
             z-index: 2000;
@@ -492,18 +563,35 @@
         
         .modal-content {
             background: #fff;
-            padding: 1.5rem;
-            border-radius: 8px;
+            padding: 2rem;
+            border-radius: 12px;
             width: 90%;
-            max-width: 400px;
+            max-width: 420px;
             border: 1px solid var(--border-color);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .welcome-card {
+            text-align: center;
+        }
+        
+        .welcome-card h2 {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+        
+        .welcome-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 24px;
         }
         
         .day-options {
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            margin: 15px 0;
+            gap: 12px;
+            margin: 20px 0;
         }
         
         .day-options label {
@@ -512,31 +600,31 @@
             gap: 10px;
             cursor: pointer;
             font-size: 0.9rem;
+            font-weight: 500;
         }
         
-        .club-item {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 10px;
-            margin-bottom: 10px;
-        }
-        
-        .club-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            margin-bottom: 6px;
+        .day-options input[type="checkbox"] {
+            accent-color: var(--text-main);
+            width: 16px;
+            height: 16px;
         }
     </style>
 </head>
 
 <body>
 
-    <!-- AUTHENTICATION VIEW -->
+    <!-- CONFETTI CANVAS -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- AUTHENTICATION VIEW (FIRST SCREEN) -->
     <div id="view-auth" class="auth-container">
         <div class="auth-card">
+            <div class="auth-brand">
+                <h1>
+                    <span class="brand-icon">s</span> SchedMaster
+                </h1>
+            </div>
+
             <div class="auth-tabs">
                 <button class="auth-tab active" onclick="switchAuthTab('login')">Log In</button>
                 <button class="auth-tab" onclick="switchAuthTab('signup')">Sign Up</button>
@@ -575,38 +663,54 @@
                 <div class="brand-icon">s</div>
                 <span>SchedMaster</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 15px;">
-                <button class="btn" style="padding: 6px 12px; font-size:0.8rem; background: #e2e8f0; color: var(--text-main);" onclick="openModeChoiceModal()">Change Mode</button>
-                <div style="font-size: 0.85rem; color: var(--text-muted);">
-                    Active Faculty: <b id="user-display-name" style="color: var(--text-main);"></b>
-                </div>
+
+            <!-- HEADER FLOATING PEN BANNER BUTTON (IN MIDDLE) -->
+            <button class="header-pen-btn" onclick="toggleDrawer()" title="Open Schedule Editor">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                <span>Edit Schedule & Slots</span>
+            </button>
+
+            <!-- TOP NAVIGATION -->
+            <div class="top-nav">
+                <button class="top-nav-btn active" id="nav-sched" onclick="switchMainView('departments')">Schedule</button>
+                <button class="top-nav-btn" id="nav-prof" onclick="switchMainView('profile')">Profile</button>
+                <button class="top-nav-btn" onclick="handleLogout()">Log Out</button>
             </div>
         </header>
 
-        <!-- VIEW: DEPARTMENTS (DAILY SCHEDULE) -->
+        <!-- VIEW: DEPARTMENTS & TRACKS SELECTION -->
         <div id="view-departments" class="view-content active">
             <div class="workspace-banner">
                 <div>
                     <h2>Select Department</h2>
-                    <p>Choose a department workspace to continue</p>
+                    <p>Choose a department workspace to manage faculty schedules</p>
+                </div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">
+                    Active Faculty: <b id="user-display-name" style="color: var(--text-main);"></b>
                 </div>
             </div>
 
+            <!-- STEP 1: JHS OR SHS -->
             <div id="dept-selection" class="selection-grid">
                 <div class="select-card" onclick="selectDept('JHS')">Junior High School (JHS)</div>
                 <div class="select-card" onclick="selectDept('SHS')">Senior High School (SHS)</div>
             </div>
 
+            <!-- STEP 2: JHS TRACKS (ICT OR REGULAR) -->
             <div id="jhs-tracks" style="display: none; margin-top: 1.5rem;">
-                <button class="btn" onclick="backToDept()" style="margin-bottom: 1rem; padding: 6px 12px; font-size:0.8rem;">&larr; Back</button>
+                <button class="btn btn-secondary" onclick="backToDept()" style="margin-bottom: 1rem; padding: 6px 12px; font-size:0.8rem;">&larr; Back to Departments</button>
                 <div class="selection-grid">
                     <div class="select-card" onclick="selectTrack('ICT')">ICT Track</div>
                     <div class="select-card" onclick="selectTrack('REGULAR')">REGULAR Track</div>
                 </div>
             </div>
 
+            <!-- STEP 3: SECTIONS SELECTION -->
             <div id="section-selection" style="display: none; margin-top: 1.5rem;">
-                <button class="btn" onclick="backToTracks()" style="margin-bottom: 1rem; padding: 6px 12px; font-size:0.8rem;">&larr; Back</button>
+                <button class="btn btn-secondary" onclick="backToTracks()" style="margin-bottom: 1rem; padding: 6px 12px; font-size:0.8rem;">&larr; Back</button>
                 <div id="section-grid" class="selection-grid"></div>
             </div>
         </div>
@@ -616,45 +720,34 @@
             <div class="workspace-banner">
                 <div>
                     <h2 id="dept-workspace-title">JHS Department Workspace</h2>
-                    <p>Active Faculty: <span id="banner-faculty"></span></p>
+                    <p>Active Faculty: <span id="banner-faculty" style="font-weight:600;"></span></p>
                 </div>
-                <button class="btn" style="background:#fff; color:var(--text-main); border:1px solid var(--border-color);" onclick="switchMainView('departments')">Schedule (Switch Dept)</button>
+                <button class="btn btn-secondary" onclick="switchMainView('departments')">Change Section / Track</button>
             </div>
 
-            <div class="grid-layout">
-                <!-- TIMETABLE DISPLAY -->
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>TIME SLOT</th>
-                                <th>MONDAY</th>
-                                <th>TUESDAY</th>
-                                <th>WEDNESDAY</th>
-                                <th>THURSDAY</th>
-                                <th>FRIDAY</th>
-                            </tr>
-                        </thead>
-                        <tbody id="timetable-body"></tbody>
-                    </table>
-                </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>TIME SLOT</th>
+                            <th>MONDAY</th>
+                            <th>TUESDAY</th>
+                            <th>WEDNESDAY</th>
+                            <th>THURSDAY</th>
+                            <th>FRIDAY</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timetable-body"></tbody>
+                </table>
             </div>
 
-            <!-- FLOATING PENCIL BUTTON -->
-            <button class="fab-edit-btn" onclick="toggleDrawer()" title="Open Schedule Editor">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 20h9"></path>
-                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>
-            </button>
-
-            <!-- LEFT-SIDE SLIDING DRAWER CONTROL PANEL -->
+            <!-- RIGHT-SIDE SLIDING DRAWER CONTROL PANEL -->
             <div id="drawer-overlay" class="drawer-overlay" onclick="closeDrawer()"></div>
             <div id="drawer-panel" class="drawer-panel">
                 <div class="drawer-header">
-                    <div>
+                    <div class="drawer-header-title">
                         <h3>Schedule Editor</h3>
-                        <p style="font-size:0.75rem; color:var(--text-muted);">Clash-Free Scheduler</p>
+                        <span>Pro Editor</span>
                     </div>
                     <button class="btn-close-drawer" onclick="closeDrawer()">&times;</button>
                 </div>
@@ -667,6 +760,11 @@
                 <div class="form-group">
                     <label>SUBJECT</label>
                     <select id="form-subject"></select>
+                    <!-- ADD CUSTOM SUBJECT OPTION -->
+                    <div class="add-subject-box">
+                        <input type="text" id="new-subject-input" placeholder="Add custom subject...">
+                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size:0.75rem;" onclick="addCustomSubject()">+ Add</button>
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -674,92 +772,8 @@
                     <select id="form-time"></select>
                 </div>
 
-                <button class="btn" style="margin-top: 0.5rem;" onclick="openDaysModal()">Save Assignment</button>
-                <button class="btn" style="background: var(--primary-dark);" onclick="saveCurrentScheduleToProfile()">Save Schedule to Cloud</button>
-            </div>
-        </div>
-
-        <!-- VIEW: MONTHLY SCHEDULE SERVER -->
-        <div id="view-monthly" class="view-content">
-            <!-- MONTH SELECTION -->
-            <div id="monthly-month-select">
-                <div class="workspace-banner">
-                    <div>
-                        <h2>Monthly Schedule Server</h2>
-                        <p>Select a month to view and manage club schedules</p>
-                    </div>
-                </div>
-                <div class="selection-grid" id="months-grid"></div>
-            </div>
-
-            <!-- WEEK SELECTION -->
-            <div id="monthly-week-select" style="display: none;">
-                <button class="btn" onclick="backToMonths()" style="margin-bottom: 1rem; padding: 6px 12px; font-size:0.8rem;">&larr; Back to Months</button>
-                <div class="workspace-banner">
-                    <div>
-                        <h2 id="selected-month-title">Month</h2>
-                        <p>Select a week</p>
-                    </div>
-                </div>
-                <div class="selection-grid">
-                    <div class="select-card" onclick="selectWeek('Week 1')">Week 1</div>
-                    <div class="select-card" onclick="selectWeek('Week 2')">Week 2</div>
-                    <div class="select-card" onclick="selectWeek('Week 3')">Week 3</div>
-                    <div class="select-card" onclick="selectWeek('Week 4')">Week 4</div>
-                </div>
-            </div>
-
-            <!-- BLANK SCHEDULE GRID WITH CLUB MANAGEMENT -->
-            <div id="monthly-grid-view" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <button class="btn" onclick="backToWeeks()" style="padding: 6px 12px; font-size:0.8rem;">&larr; Back to Weeks</button>
-                    <button class="btn" style="background: #64748b;" onclick="switchMainView('departments')">Go to Schedule (JHS/SHS)</button>
-                </div>
-                <div class="workspace-banner">
-                    <div>
-                        <h2 id="monthly-grid-title">Monthly Schedule Grid</h2>
-                        <p>Monday to Friday event viewer</p>
-                    </div>
-                </div>
-
-                <div class="monthly-layout">
-                    <!-- BLANK TIMETABLE (NO TIME SLOTS) -->
-                    <div class="table-wrapper">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>MONDAY</th>
-                                    <th>TUESDAY</th>
-                                    <th>WEDNESDAY</th>
-                                    <th>THURSDAY</th>
-                                    <th>FRIDAY</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td id="m-cell-MONDAY"></td>
-                                    <td id="m-cell-TUESDAY"></td>
-                                    <td id="m-cell-WEDNESDAY"></td>
-                                    <td id="m-cell-THURSDAY"></td>
-                                    <td id="m-cell-FRIDAY"></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- SIDEBAR: CLUB MANAGEMENT -->
-                    <div class="control-card">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3>Clubs & Events</h3>
-                            <button class="btn btn-success" style="padding: 4px 8px; font-size:0.75rem;" onclick="openAddClubModal()">+ Add Club</button>
-                        </div>
-                        <p>Manage clubs and set schedule events.</p>
-
-                        <div id="clubs-list-container" style="max-height: 400px; overflow-y: auto;">
-                            <!-- Clubs will be rendered here -->
-                        </div>
-                    </div>
-                </div>
+                <button class="btn" style="margin-top: 0.5rem;" onclick="openDaysModal()">Save Slot Assignment</button>
+                <button class="btn btn-secondary" style="margin-top: 0.2rem;" onclick="saveCurrentScheduleToProfile()">Save Schedule to Cloud</button>
             </div>
         </div>
 
@@ -768,19 +782,14 @@
             <div class="workspace-banner">
                 <div>
                     <h2>User Profile</h2>
-                    <p>Manage your account and saved schedules</p>
+                    <p>View your saved class schedules</p>
                 </div>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
-                <button class="btn" onclick="showMySchedules()">My Schedule</button>
-                <button class="btn btn-danger" onclick="handleLogout()">Log Out</button>
-            </div>
-
-            <div id="my-schedules-container" style="display: none;">
+            <div id="my-schedules-container">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3>My Schedule Grid</h3>
-                    <button class="btn btn-danger" onclick="clearMySchedule()" style="padding: 5px 10px; font-size:0.8rem;">Clear My Grid</button>
+                    <h3>My Saved Schedule Grid</h3>
+                    <button class="btn btn-secondary" onclick="clearMySchedule()" style="padding: 6px 12px; font-size:0.8rem;">Clear Grid</button>
                 </div>
 
                 <div class="table-wrapper">
@@ -800,93 +809,33 @@
                 </div>
             </div>
         </div>
-
-        <!-- BOTTOM NAVIGATION -->
-        <nav class="bottom-nav">
-            <button class="nav-item active" onclick="switchMainView('departments')">
-                <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-                <span>SCHEDULE</span>
-            </button>
-            <button class="nav-item" onclick="openMonthlyViewDirect()">
-                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <span>MONTHLY</span>
-            </button>
-            <button class="nav-item" onclick="switchMainView('profile')">
-                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                <span>PROFILE</span>
-            </button>
-        </nav>
     </div>
 
-    <!-- MODAL: SCHEDULE CHOICE UPON LOGIN -->
-    <div id="modal-mode-choice" class="modal-overlay">
-        <div class="modal-content" style="text-align: center;">
-            <h3 style="margin-bottom: 10px;">Select Schedule Type</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Choose where you want to navigate</p>
-            <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button class="btn" onclick="chooseMode('daily')">Daily Schedule (JHS/SHS)</button>
-                <button class="btn" style="background: var(--primary-dark);" onclick="chooseMode('monthly')">Monthly Schedule</button>
-            </div>
+    <!-- MODAL: WELCOME TO SCHEDMASTER (WITH CONFETTI) -->
+    <div id="modal-welcome" class="modal-overlay">
+        <div class="modal-content welcome-card">
+            <h2>Welcome to SchedMaster! 🎉</h2>
+            <p>Your clash-free faculty schedule management platform. Let's get your timetable organized.</p>
+            <button class="btn" style="width: 100%;" onclick="startAppAfterWelcome()">Get Started</button>
         </div>
     </div>
 
     <!-- MODAL: DAYS POPUP -->
     <div id="modal-days" class="modal-overlay">
         <div class="modal-content">
-            <h3 style="font-size:1rem; margin-bottom:10px;">Select Days</h3>
+            <h3 style="font-size:1.1rem; margin-bottom:10px;">Select Days</h3>
             <div class="day-options">
                 <label><input type="checkbox" class="day-checkbox" value="MONDAY"> Monday</label>
                 <label><input type="checkbox" class="day-checkbox" value="TUESDAY"> Tuesday</label>
                 <label><input type="checkbox" class="day-checkbox" value="WEDNESDAY"> Wednesday</label>
                 <label><input type="checkbox" class="day-checkbox" value="THURSDAY"> Thursday</label>
                 <label><input type="checkbox" class="day-checkbox" value="FRIDAY"> Friday</label>
-                <hr style="border: 0; border-top: 1px solid var(--border-color);">
+                <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 4px 0;">
                 <label><input type="checkbox" id="select-all-days" onchange="toggleSelectAllDays(this)"> <b>Select All</b></label>
             </div>
             <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="btn btn-danger" style="padding: 6px 12px;" onclick="closeDaysModal()">Cancel</button>
-                <button class="btn" style="padding: 6px 12px;" onclick="applyDaysSelection()">Confirm</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: ADD CLUB -->
-    <div id="modal-add-club" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="font-size:1rem; margin-bottom:10px;">Create New Club</h3>
-            <div class="form-group">
-                <label>Club Name</label>
-                <input type="text" id="new-club-name" placeholder="e.g., Coding Club">
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
-                <button class="btn btn-danger" style="padding: 6px 12px;" onclick="closeAddClubModal()">Cancel</button>
-                <button class="btn" style="padding: 6px 12px;" onclick="confirmAddClub()">Add</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: ADD CLUB SCHEDULE EVENT -->
-    <div id="modal-add-event" class="modal-overlay">
-        <div class="modal-content">
-            <h3 style="font-size:1rem; margin-bottom:10px;">Add Schedule Event</h3>
-            <input type="hidden" id="event-club-id">
-            <div class="form-group">
-                <label>Select Day</label>
-                <select id="event-day">
-                    <option value="MONDAY">Monday</option>
-                    <option value="TUESDAY">Tuesday</option>
-                    <option value="WEDNESDAY">Wednesday</option>
-                    <option value="THURSDAY">Thursday</option>
-                    <option value="FRIDAY">Friday</option>
-                </select>
-            </div>
-            <div class="form-group" style="margin-top: 10px;">
-                <label>Event Description</label>
-                <input type="text" id="event-text" placeholder="e.g., Meeting at Room 101">
-            </div>
-            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 15px;">
-                <button class="btn btn-danger" style="padding: 6px 12px;" onclick="closeAddEventModal()">Cancel</button>
-                <button class="btn" style="padding: 6px 12px;" onclick="confirmAddEvent()">Save Event</button>
+                <button class="btn btn-secondary" style="padding: 8px 14px;" onclick="closeDaysModal()">Cancel</button>
+                <button class="btn" style="padding: 8px 14px;" onclick="applyDaysSelection()">Confirm</button>
             </div>
         </div>
     </div>
@@ -903,7 +852,6 @@
             appId: "YOUR_APP_ID"
         };
 
-        // Subukan i-initialize ang Firebase. Mag-fall back sa localStorage kapag kulang ang config.
         let db = null;
         try {
             if (firebaseConfig.apiKey !== "YOUR_API_KEY") {
@@ -934,8 +882,6 @@
             }
         };
 
-        const SCHOOL_MONTHS = ["August", "September", "October", "November", "December", "January", "February", "March", "April", "May"];
-
         const TIME_SLOTS_ICT = [
             "7:30 AM - 8:30 AM", "8:30 AM - 9:30 AM", "9:30 AM - 10:00 AM (Morning Recess)",
             "10:00 AM - 11:00 AM", "11:00 AM - 12:00 PM", "12:00 PM - 1:00 PM (Lunch Break)",
@@ -953,7 +899,6 @@
         let currentUser = null;
         let registeredUsers = JSON.parse(localStorage.getItem('app_users')) || {};
         let userSchedules = JSON.parse(localStorage.getItem('app_schedules')) || [];
-        let clubsData = JSON.parse(localStorage.getItem('app_clubs')) || [];
 
         let currentDept = 'JHS';
         let currentTrack = 'REGULAR';
@@ -961,38 +906,66 @@
         let activeTimeSlots = TIME_SLOTS_REGULAR;
         let workingDraft = [];
 
-        let selectedMonth = '';
-        let selectedWeek = '';
+        /* CONFETTI ANIMATION SYSTEM */
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
 
-        /* REALTIME LISTENERS (AUTOMATICALLY UPDATES ACROSS DEVICES) */
+            const particles = [];
+            const colors = ['#000000', '#333333', '#666666', '#999999', '#cccccc'];
+
+            for (let i = 0; i < 120; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height - canvas.height,
+                    size: Math.random() * 8 + 4,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    speed: Math.random() * 5 + 2,
+                    angle: Math.random() * 360,
+                    spin: Math.random() * 0.2 - 0.1
+                });
+            }
+
+            let animationFrame;
+
+            function render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.y += p.speed;
+                    p.angle += p.spin;
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.rotate(p.angle);
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size);
+                    ctx.restore();
+                });
+
+                if (particles.some(p => p.y < canvas.height)) {
+                    animationFrame = requestAnimationFrame(render);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    cancelAnimationFrame(animationFrame);
+                }
+            }
+            render();
+        }
+
+        /* REALTIME LISTENERS */
         function initRealtimeListeners() {
             if (!db) return;
-
-            // 1. Live Sync Schedules
             db.ref('schedules').on('value', (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     userSchedules = Object.values(data);
                     localStorage.setItem('app_schedules', JSON.stringify(userSchedules));
-
                     if (document.getElementById('view-schedule').classList.contains('active')) {
                         renderTimetable();
                     }
-                    if (document.getElementById('my-schedules-container').style.display === 'block') {
+                    if (document.getElementById('view-profile').classList.contains('active')) {
                         showMySchedules();
-                    }
-                }
-            });
-
-            // 2. Live Sync Clubs & Events
-            db.ref('clubs').on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    clubsData = Object.values(data);
-                    localStorage.setItem('app_clubs', JSON.stringify(clubsData));
-
-                    if (document.getElementById('monthly-grid-view').style.display === 'block') {
-                        renderMonthlyGridAndClubs();
                     }
                 }
             });
@@ -1034,8 +1007,8 @@
 
             registeredUsers[name] = pass;
             localStorage.setItem('app_users', JSON.stringify(registeredUsers));
-            alert('Account created successfully!');
-            switchAuthTab('login');
+            currentUser = name;
+            postLoginSuccess();
         }
 
         function handleLogin(e) {
@@ -1049,44 +1022,45 @@
             }
 
             currentUser = name;
+            postLoginSuccess();
+        }
+
+        function postLoginSuccess() {
             document.getElementById('user-display-name').innerText = currentUser;
             document.getElementById('banner-faculty').innerText = currentUser;
             document.getElementById('view-auth').style.display = 'none';
             document.getElementById('main-portal').style.display = 'block';
 
             initRealtimeListeners();
-            openModeChoiceModal();
+
+            // SHOW WELCOME MODAL WITH CONFETTI
+            document.getElementById('modal-welcome').style.display = 'flex';
+            triggerConfetti();
+        }
+
+        function startAppAfterWelcome() {
+            document.getElementById('modal-welcome').style.display = 'none';
+            switchMainView('departments');
         }
 
         function handleLogout() {
             currentUser = null;
             document.getElementById('main-portal').style.display = 'none';
             document.getElementById('view-auth').style.display = 'flex';
-            document.getElementById('my-schedules-container').style.display = 'none';
-        }
-
-        /* POPUP MODE CHOICE (DAILY VS MONTHLY) */
-        function openModeChoiceModal() {
-            document.getElementById('modal-mode-choice').style.display = 'flex';
-        }
-
-        function chooseMode(mode) {
-            document.getElementById('modal-mode-choice').style.display = 'none';
-            if (mode === 'daily') {
-                switchMainView('departments');
-                selectDept('JHS');
-            } else {
-                openMonthlyViewDirect();
-            }
         }
 
         function switchMainView(viewName) {
             document.querySelectorAll('.view-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.top-nav-btn').forEach(el => el.classList.remove('active'));
 
-            document.getElementById(`view-${viewName}`).classList.add('active');
-            const navIndex = viewName === 'departments' || viewName === 'schedule' ? 0 : viewName === 'monthly' ? 1 : 2;
-            document.querySelectorAll('.nav-item')[navIndex].classList.add('active');
+            if (viewName === 'departments' || viewName === 'schedule') {
+                document.getElementById(`view-${viewName}`).classList.add('active');
+                document.getElementById('nav-sched').classList.add('active');
+            } else if (viewName === 'profile') {
+                document.getElementById('view-profile').classList.add('active');
+                document.getElementById('nav-prof').classList.add('active');
+                showMySchedules();
+            }
         }
 
         /* DEPARTMENT & TRACK SELECTION */
@@ -1145,7 +1119,7 @@
 
         function chooseSection(section) {
             activeSection = section;
-            document.getElementById('dept-workspace-title').innerText = `${currentDept} Department Workspace`;
+            document.getElementById('dept-workspace-title').innerText = `${currentDept} Workspace (${currentTrack})`;
             populateDropdowns();
             renderTimetable();
             switchMainView('schedule');
@@ -1164,6 +1138,20 @@
 
             const availableSlots = activeTimeSlots.filter(s => !s.includes("Recess") && !s.includes("Break"));
             timeSelect.innerHTML = availableSlots.map(t => `<option value="${t}">${t}</option>`).join('');
+        }
+
+        function addCustomSubject() {
+            const input = document.getElementById('new-subject-input');
+            const val = input.value.trim();
+            if (!val) return;
+
+            const targetList = currentDept === 'JHS' ? DATA.JHS.subjects : DATA.SHS.subjects;
+            if (!targetList.includes(val)) {
+                targetList.push(val);
+                populateDropdowns();
+                document.getElementById('form-subject').value = val;
+            }
+            input.value = '';
         }
 
         function onSectionChange() {
@@ -1232,11 +1220,10 @@
 
                         if (isBreak) {
                             tr.classList.add('break-row');
-                            tr.innerHTML = `<td class="time-col">${slot}</td><td colspan="5" style="color:#94a3b8;">- Break</td>`;
+                            tr.innerHTML = `<td class="time-col">${slot}</td><td colspan="5">- Break -</td>`;
                         } else {
                             let timeTd = `<td class="time-col">${slot}</td>`;
                             let daysHtml = DAYS.map(day => {
-                                        // Combines working draft & synced live schedules from other users
                                         let entry = workingDraft.find(s => s.section === activeSection && s.day === day && s.time === slot);
                                         let owner = currentUser;
 
@@ -1268,7 +1255,7 @@
             });
         }
 
-        /* SAVE SCHEDULE - SYNCED REALTIME TO FIREBASE CLOUD */
+        /* SAVE SCHEDULE TO CLOUD / LOCAL */
         function saveCurrentScheduleToProfile() {
             if (workingDraft.length === 0) {
                 alert('Please add entries to the schedule first!');
@@ -1282,223 +1269,23 @@
                 updatedAt: Date.now()
             };
 
-            // 1. Update Local
             userSchedules = userSchedules.filter(s => s.user !== currentUser);
             userSchedules.push(payload);
             localStorage.setItem('app_schedules', JSON.stringify(userSchedules));
 
-            // 2. Sync to Cloud
             if (db) {
                 const cleanUserKey = currentUser.replace(/[.#$/[\]]/g, "_");
                 db.ref('schedules/' + cleanUserKey).set(payload)
-                    .then(() => alert('Schedule saved and synced live across all devices!'))
-                    .catch(err => alert('Cloud sync error: ' + err.message));
+                    .then(() => alert('Schedule saved successfully across cloud!'))
+                    .catch(err => alert('Sync error: ' + err.message));
             } else {
-                alert('Schedule saved locally! (Configure Firebase for live multi-device sync)');
+                alert('Schedule saved locally!');
             }
-        }
-
-        /* MONTHLY SCHEDULE SYSTEM */
-        function openMonthlyViewDirect() {
-            switchMainView('monthly');
-            document.getElementById('monthly-month-select').style.display = 'block';
-            document.getElementById('monthly-week-select').style.display = 'none';
-            document.getElementById('monthly-grid-view').style.display = 'none';
-
-            const container = document.getElementById('months-grid');
-            container.innerHTML = '';
-            SCHOOL_MONTHS.forEach(m => {
-                const card = document.createElement('div');
-                card.className = 'select-card';
-                card.innerText = m;
-                card.onclick = () => selectMonth(m);
-                container.appendChild(card);
-            });
-        }
-
-        function selectMonth(m) {
-            selectedMonth = m;
-            document.getElementById('monthly-month-select').style.display = 'none';
-            document.getElementById('monthly-week-select').style.display = 'block';
-            document.getElementById('selected-month-title').innerText = `${selectedMonth} Schedule`;
-        }
-
-        function backToMonths() {
-            document.getElementById('monthly-week-select').style.display = 'none';
-            document.getElementById('monthly-month-select').style.display = 'block';
-        }
-
-        function selectWeek(w) {
-            selectedWeek = w;
-            document.getElementById('monthly-week-select').style.display = 'none';
-            document.getElementById('monthly-grid-view').style.display = 'block';
-            document.getElementById('monthly-grid-title').innerText = `${selectedMonth} - ${selectedWeek}`;
-            renderMonthlyGridAndClubs();
-        }
-
-        function backToWeeks() {
-            document.getElementById('monthly-grid-view').style.display = 'none';
-            document.getElementById('monthly-week-select').style.display = 'block';
-        }
-
-        /* CLUB MANAGEMENT SYSTEM WITH REALTIME SYNC */
-        function openAddClubModal() { document.getElementById('modal-add-club').style.display = 'flex'; }
-        function closeAddClubModal() { document.getElementById('modal-add-club').style.display = 'none'; }
-
-        function confirmAddClub() {
-            const clubName = document.getElementById('new-club-name').value.trim();
-            if (!clubName) {
-                alert('Please enter a club name!');
-                return;
-            }
-
-            const newClub = {
-                id: Date.now(),
-                name: clubName,
-                createdBy: currentUser,
-                events: []
-            };
-
-            clubsData.push(newClub);
-            localStorage.setItem('app_clubs', JSON.stringify(clubsData));
-
-            if (db) {
-                db.ref('clubs/' + newClub.id).set(newClub);
-            }
-
-            document.getElementById('new-club-name').value = '';
-            closeAddClubModal();
-            renderMonthlyGridAndClubs();
-        }
-
-        function deleteClub(clubId) {
-            const club = clubsData.find(c => c.id === clubId);
-            if (!club) return;
-
-            if (club.createdBy !== currentUser) {
-                alert(`Permission denied! Only ${club.createdBy} (the creator) can delete this club.`);
-                return;
-            }
-
-            if (confirm(`Are you sure you want to delete "${club.name}"?`)) {
-                clubsData = clubsData.filter(c => c.id !== clubId);
-                localStorage.setItem('app_clubs', JSON.stringify(clubsData));
-
-                if (db) {
-                    db.ref('clubs/' + clubId).remove();
-                }
-
-                renderMonthlyGridAndClubs();
-            }
-        }
-
-        function openAddEventModal(clubId) {
-            document.getElementById('event-club-id').value = clubId;
-            document.getElementById('modal-add-event').style.display = 'flex';
-        }
-
-        function closeAddEventModal() {
-            document.getElementById('modal-add-event').style.display = 'none';
-        }
-
-        function confirmAddEvent() {
-            const clubId = Number(document.getElementById('event-club-id').value);
-            const day = document.getElementById('event-day').value;
-            const text = document.getElementById('event-text').value.trim();
-
-            if (!text) {
-                alert('Please enter event description!');
-                return;
-            }
-
-            const club = clubsData.find(c => c.id === clubId);
-            if (club) {
-                club.events = club.events || [];
-                club.events.push({
-                    id: Date.now(),
-                    month: selectedMonth,
-                    week: selectedWeek,
-                    day: day,
-                    text: text
-                });
-
-                localStorage.setItem('app_clubs', JSON.stringify(clubsData));
-
-                if (db) {
-                    db.ref('clubs/' + clubId).set(club);
-                }
-            }
-
-            document.getElementById('event-text').value = '';
-            closeAddEventModal();
-            renderMonthlyGridAndClubs();
-        }
-
-        function deleteClubEvent(clubId, eventId) {
-            const club = clubsData.find(c => c.id === clubId);
-            if (club) {
-                club.events = club.events.filter(e => e.id !== eventId);
-                localStorage.setItem('app_clubs', JSON.stringify(clubsData));
-
-                if (db) {
-                    db.ref('clubs/' + clubId).set(club);
-                }
-
-                renderMonthlyGridAndClubs();
-            }
-        }
-
-        function renderMonthlyGridAndClubs() {
-            DAYS.forEach(day => {
-                document.getElementById(`m-cell-${day}`).innerHTML = '';
-            });
-
-            const clubsContainer = document.getElementById('clubs-list-container');
-            clubsContainer.innerHTML = '';
-
-            if (clubsData.length === 0) {
-                clubsContainer.innerHTML = `<p style="font-size:0.8rem; color:var(--text-muted);">No clubs added yet.</p>`;
-            }
-
-            clubsData.forEach(club => {
-                const isOwner = club.createdBy === currentUser;
-                const clubEl = document.createElement('div');
-                clubEl.className = 'club-item';
-
-                clubEl.innerHTML = `
-                    <div class="club-header">
-                        <span>${club.name} <small style="font-weight:normal; color:var(--text-muted); font-size:0.7rem;">(${club.createdBy})</small></span>
-                        <div>
-                            <button class="btn btn-success" style="padding: 2px 6px; font-size:0.7rem;" onclick="openAddEventModal(${club.id})">+ Event</button>
-                            ${isOwner ? `<button class="btn btn-danger" style="padding: 2px 6px; font-size:0.7rem;" onclick="deleteClub(${club.id})">Delete</button>` : ''}
-                        </div>
-                    </div>
-                `;
-                clubsContainer.appendChild(clubEl);
-
-                (club.events || []).forEach(ev => {
-                    if (ev.month === selectedMonth && ev.week === selectedWeek) {
-                        const cell = document.getElementById(`m-cell-${ev.day}`);
-                        if (cell) {
-                            const eventCard = document.createElement('div');
-                            eventCard.className = 'slot-card';
-                            eventCard.innerHTML = `
-                                <button class="btn-del" onclick="deleteClubEvent(${club.id}, ${ev.id})">&times;</button>
-                                <strong>${club.name}</strong>
-                                <span>${ev.text}</span>
-                            `;
-                            cell.appendChild(eventCard);
-                        }
-                    }
-                });
-            });
         }
 
         /* PROFILE VIEW */
         function showMySchedules() {
-            const container = document.getElementById('my-schedules-container');
             const tbody = document.getElementById('profile-timetable-body');
-            container.style.display = 'block';
             tbody.innerHTML = '';
 
             const userSched = userSchedules.find(s => s.user === currentUser);
@@ -1516,7 +1303,7 @@
 
                 if (isBreak) {
                     tr.classList.add('break-row');
-                    tr.innerHTML = `<td class="time-col">${slot}</td><td colspan="5" style="color:#94a3b8;">- Break</td>`;
+                    tr.innerHTML = `<td class="time-col">${slot}</td><td colspan="5">- Break -</td>`;
                 } else {
                     let timeTd = `<td class="time-col">${slot}</td>`;
                     let daysHtml = DAYS.map(day => {
